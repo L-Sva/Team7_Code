@@ -42,7 +42,16 @@ if __name__ == '__main__':
     for column in total_dataset:
         if total_dataset[column].dtype != 'object':
             bins, h = plot_hist_quantity(total_dataset, column, label='total_dataset')
-            plot_hist_quantity(signal, column, label='jpsi', bins=bins)
+            plot_hist_quantity(signal, column, label='signal', bins=bins)
             plt.legend()
             plt.savefig(path.join('data_histograms',f'{column}.png'))
+            plt.close()
+
+    for column in total_dataset:
+        if total_dataset[column].dtype != 'object':
+            bins, h = plot_hist_quantity(total_dataset, column, label='total_dataset')
+            plot_hist_quantity(signal, column, label='signal', bins=bins)
+            plot_hist_quantity(jpsi, column, label='jpsi', bins=bins)
+            plt.legend()
+            plt.savefig(path.join('data_histograms_with_jpsi',f'{column}.png'))
             plt.close()
