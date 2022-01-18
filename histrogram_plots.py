@@ -40,8 +40,9 @@ if __name__ == '__main__':
     signal = load_file('signal.pkl')
 
     for column in total_dataset:
-        bins, h = plot_hist_quantity(total_dataset, column, label='total_dataset')
-        plot_hist_quantity(jpsi, column, label='jpsi', bins=bins)
-        plt.legend()
-        plt.savefig(path.join('data_histograms',f'{column}.png'))
-        plt.close()
+        if total_dataset[column].dtype != 'object':
+            bins, h = plot_hist_quantity(total_dataset, column, label='total_dataset')
+            plot_hist_quantity(signal, column, label='jpsi', bins=bins)
+            plt.legend()
+            plt.savefig(path.join('data_histograms',f'{column}.png'))
+            plt.close()
