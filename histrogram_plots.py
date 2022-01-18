@@ -1,17 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
-import pickle
 import os.path as path
-import mplhep
+from core import load_file
 
 # Requires all .pkl files provided to be placed in /data/
-
-def load_file(filename='total_dataset.pkl') -> pd.DataFrame:
-    res = None
-    with open(path.join('data',filename),'rb') as file:
-        res = pickle.load(file)
-    return res
 
 
 def plot_hist_quantity(df,column,bins=100,range=None,label=None):
