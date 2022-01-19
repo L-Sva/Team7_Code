@@ -1,5 +1,6 @@
 from typing import Tuple
 from core import RAWFILES, load_file
+import pandas as pd
 
 BASE_NAMES = [name for name in load_file(RAWFILES.SIGNAL)]
 
@@ -17,3 +18,17 @@ def ml_strip_columns(dataframe, accepted_column_names: Tuple=()):
             dataframe = dataframe.drop(name)
 
     return dataframe
+
+def ml_prepare_test_train(dataset) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """Takes a dataset and splits it into test and train datasets"""
+    pass
+
+def ml_train_model(training_data, model):
+    """Trains a ML model. Requires that the parameter `training_data` contains a column named 'category'
+    which will be the value the ML model is trained to predict; this should contain only integers,
+    preferably only 0 or 1.
+    """
+
+    train_vars = training_data.drop('category')
+    model.fit(train_vars, training_data['category'])
+    return model
