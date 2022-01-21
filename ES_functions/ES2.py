@@ -21,8 +21,8 @@ def ES2(dataframe):
 
     return subset, not_subset
 #%%
-#test
-file=open('total_dataset.csv')
-dataset=pd.read_csv('total_dataset.csv',delimiter=',')
-subset, not_subset=ES2(dataset)
-print(subset["Kstar_MM"].head())
+if __name__ == '__main__':
+    file=open('total_dataset.csv')
+    dataset=pd.read_csv('total_dataset.csv',delimiter=',')
+    subset, not_subset=ES2(dataset)
+    print(subset["Kstar_MM"].head())
