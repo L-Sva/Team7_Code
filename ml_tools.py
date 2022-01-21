@@ -5,7 +5,11 @@ from sklearn.model_selection import train_test_split
 
 BASE_NAMES = [name for name in load_file(RAWFILES.SIGNAL)]
 
-def ml_strip_columns(dataframe, accepted_column_names: Tuple[str, ...]=(), inplace=False) -> pd.DataFrame:
+def ml_strip_columns(dataframe, 
+    accepted_column_names: Tuple[str, ...]=(), 
+    reject_column_names: Tuple[str, ...]=(), 
+    inplace=False
+) -> pd.DataFrame:
     """Strips columns which contain information we don't want to pass to the ML model"""
 
     if not inplace:
@@ -18,7 +22,10 @@ def ml_strip_columns(dataframe, accepted_column_names: Tuple[str, ...]=(), inpla
     
     # Drops any columns added during processing not specified to keep
     for name in dataframe:
-        if not name in BASE_NAMES or name in accepted_column_names or name == 'category':
+        if (
+            not (name in BASE_NAMES or name in accepted_column_names or name == 'category') 
+            or name in reject_column_names
+        ):
             dataframe.drop(name, inplace=True)
 
     return dataframe
