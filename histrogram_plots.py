@@ -5,7 +5,6 @@ from core import load_file
 
 # Requires all .pkl files provided to be placed in /data/
 
-
 def plot_hist_quantity(df,column,bins=100,range=None,label=None):
     # Prevents exception being thrown for 'year' column
     if df[column].dtype != 'object':
@@ -25,6 +24,13 @@ def plot_hist_quantity(df,column,bins=100,range=None,label=None):
         plt.xlim(bins[0], bins[-1])
 
         return bins, h
+
+def generic_selector_plot(orginal,subset, not_subset, column, bins = 100):
+    bins, h = plot_hist_quantity(orginal, column, label='Original', bins=bins)
+    plot_hist_quantity(subset, column, label='Subset', bins = bins)
+    plot_hist_quantity(not_subset, column, label='Not subset', bins=bins)
+    plt.legend()
+    plt.show()
 
 if __name__ == '__main__':
     total_dataset = load_file('total_dataset.pkl')
