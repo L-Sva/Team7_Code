@@ -1,3 +1,5 @@
+import numpy as np
+
 def ES1(dataframe):
     subset = []
     not_subset = []
