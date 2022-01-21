@@ -38,12 +38,14 @@ def ml_prepare_test_train(dataset, randomiser_seed = 1) -> Tuple[pd.DataFrame, p
 
 
 def ml_combine_signal_bk(signal_dataset, background_dataset):
+    """Combines signal and background dataset, adding category labels
+    """
     # Marek
-    # Add 'category' column to each dataset
+    signal_dataset['category'] = 1
+    background_dataset['category'] = 1
 
     # combine
-    dataset = None
-
+    dataset = pd.concat((signal_dataset, background_dataset))
     return dataset
 
 def test_false_true_negative_positive(model, test_dataset, threshold) -> dict:
