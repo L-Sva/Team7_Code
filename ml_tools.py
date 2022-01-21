@@ -1,10 +1,11 @@
 from typing import Tuple
 from core import RAWFILES, load_file
 import pandas as pd
+from sklearn.model_selection import train_test_split
 
 BASE_NAMES = [name for name in load_file(RAWFILES.SIGNAL)]
 
-def ml_strip_columns(dataframe, accepted_column_names: Tuple=()):
+def ml_strip_columns(dataframe, accepted_column_names: Tuple[str, ...]=()) -> pd.DataFrame:
     """Strips columns which contain information we don't want to pass to the ML model"""
 
     # Drops 'year' and 'B0_ID' columns
@@ -14,14 +15,10 @@ def ml_strip_columns(dataframe, accepted_column_names: Tuple=()):
     
     # Drops any columns added during processing not specified to keep
     for name in dataframe:
-        if not name in BASE_NAMES or name in accepted_column_names:
+        if not name in BASE_NAMES or name in accepted_column_names or name == 'category':
             dataframe = dataframe.drop(name)
 
     return dataframe
-
-def ml_prepare_test_train(dataset) -> Tuple[pd.DataFrame, pd.DataFrame]:
-    """Takes a dataset and splits it into test and train datasets"""
-    pass
 
 def ml_train_model(training_data, model):
     """Trains a ML model. Requires that the parameter `training_data` contains a column named 'category'
@@ -32,3 +29,43 @@ def ml_train_model(training_data, model):
     train_vars = training_data.drop('category')
     model.fit(train_vars, training_data['category'])
     return model
+
+def ml_prepare_test_train(dataset, randomiser_seed = 1) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """Takes a dataset and splits it into test and train datasets"""
+    # Marek
+    train, test = train_test_split(dataset, test_size = 0.2, random_state=randomiser_seed)
+    return train, test
+
+
+def ml_combine_signal_bk(signal_dataset, background_dataset):
+    # Marek
+    # Add 'category' column to each dataset
+
+    # combine
+    dataset = None
+
+    return dataset
+
+def test_false_true_negative_positive(model, test_dataset, threshold) -> dict:
+    # Jiayang
+    return {
+        'true-positive': 0.8,
+        'false-positive': 1,
+        'true-negative': 0.1,
+        'false-negative': 0.2
+    }
+
+def roc_curve(model, test_dataset):
+    # Jose
+    pass
+
+def plot_roc_curve():
+    # Jose
+    pass
+
+def test_sb(model, test_dataset, threshold):
+    # Jiayang
+    # Author should find a better name
+    pass
+
+
