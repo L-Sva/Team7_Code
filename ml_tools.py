@@ -2,12 +2,14 @@ from typing import Tuple
 from core import RAWFILES, load_file
 import pandas as pd
 from sklearn.model_selection import train_test_split
+import numpy as np
+import matplotlib.pyplot as plt
 
 BASE_NAMES = [name for name in load_file(RAWFILES.SIGNAL)]
 
-def ml_strip_columns(dataframe, 
-    accepted_column_names: Tuple[str, ...]=(), 
-    reject_column_names: Tuple[str, ...]=(), 
+def ml_strip_columns(dataframe,
+    accepted_column_names: Tuple[str, ...]=(),
+    reject_column_names: Tuple[str, ...]=(),
     inplace=False
 ) -> pd.DataFrame:
     """Strips columns which contain information we don't want to pass to the ML model"""
@@ -19,11 +21,11 @@ def ml_strip_columns(dataframe,
     columns_names_to_drop = ('year','B0_ID')
     for name in columns_names_to_drop:
         dataframe = dataframe.drop(name)
-    
+
     # Drops any columns added during processing not specified to keep
     for name in dataframe:
         if (
-            not (name in BASE_NAMES or name in accepted_column_names or name == 'category') 
+            not (name in BASE_NAMES or name in accepted_column_names or name == 'category')
             or name in reject_column_names
         ):
             dataframe.drop(name, inplace=True)
@@ -58,14 +60,55 @@ def ml_combine_signal_bk(signal_dataset, background_dataset):
     dataset = pd.concat((signal_dataset, background_dataset))
     return dataset
 
+
 def test_false_true_negative_positive(model, test_dataset, threshold) -> dict:
     # Jiayang
+
+    sig_prob = model # signal probability from bdt model
+
+
+    signal = 0
+    background = 0
+    true_positive = 0
+    false_negtive = 0
+    false_positive = 0
+    true_negative = 0
+
+    for i in range(len(test_dataset['catagory'])):
+        if (test_dataset['catagory'][i] == 1) and (sig_prob[i] >= threshold): # signal + postive
+            signal += 1
+            true_positive += 1
+        elif (test_dataset['catagory'][i] == 1) and (sig_prob[i] < threshold): # signal + negative
+            signal += 1
+            false_negtive += 1
+        elif (test_dataset['catagory'][i] == 0) and (sig_prob[i] >= threshold): # background + postive
+            background += 1
+            false_positive +=1
+        elif (test_dataset['catagory'][i] == 0) and (sig_prob[i] < threshold): # background + negative
+            background += 1
+            true_negative +=1
+
+    # sanity check
+    # total = true_positive + false_negtive + false_positive + true_negative
+    # print('total counted:', total, (signal+background))
+    # print('total candidates:', len(test_dataset['catagory']))
+
+    # rates
+    tpr = true_positive / signal
+    fpr = false_positive / background
+
+    fnr = false_negtive / signal
+    tnr = true_negative / background
+
     return {
-        'true-positive': 0.8,
-        'false-positive': 1,
-        'true-negative': 0.1,
-        'false-negative': 0.2
+        'true-positive': tpr,
+        'false-positive': fpr,
+        'true-negative': tnr,
+        'false-negative': fnr,
+        'signal': signal,
+        'background': background
     }
+
 
 def roc_curve(model, test_dataset):
     # Jose
@@ -77,7 +120,11 @@ def plot_roc_curve():
 
 def test_sb(model, test_dataset, threshold):
     # Jiayang
-    # Author should find a better name
-    pass
 
+    output = test_false_true_negative_positive(model, test_dataset, threshold)
 
+    S = output['signal'] * output['true-positive']
+    B = output['background'] * output['false-positive']
+    metric = S/np.sqrt(S+B)
+
+    return metric
