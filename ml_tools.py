@@ -67,27 +67,19 @@ def ml_get_model_sig_prob(testData, model):
 def test_false_true_negative_positive(test_dataset, sig_prob, threshold) -> dict:
     # Jiayang
 
-    signal = 0
-    background = 0
-    true_positive = 0
-    false_negtive = 0
-    false_positive = 0
-    true_negative = 0
-
     x = test_dataset['category'].to_numpy()
-    for i in range(len(x)):
-        if (x[i] == 1) and (sig_prob[i] >= threshold): # signal + postive
-            signal += 1
-            true_positive += 1
-        elif (x[i] == 1) and (sig_prob[i] < threshold): # signal + negative
-            signal += 1
-            false_negtive += 1
-        elif (x[i] == 0) and (sig_prob[i] >= threshold): # background + postive
-            background += 1
-            false_positive +=1
-        elif (x[i] == 0) and (sig_prob[i] < threshold): # background + negative
-            background += 1
-            true_negative +=1
+
+    x_mask_0 = x == 0
+    x_mask_1 = x == 1
+    prb_mask_pos = sig_prob >= threshold
+    prb_mask_neg = sig_prob < threshold
+
+    signal = np.count_nonzero(x_mask_1)
+    background = np.count_nonzero(x_mask_0)
+    true_positive =  np.count_nonzero(np.logical_and(x_mask_1, prb_mask_pos))
+    false_negative = np.count_nonzero(np.logical_and(x_mask_1, prb_mask_neg))
+    false_positive = np.count_nonzero(np.logical_and(x_mask_0, prb_mask_pos))
+    true_negative =  np.count_nonzero(np.logical_and(x_mask_0, prb_mask_neg))
 
     # sanity check
     # total = true_positive + false_negtive + false_positive + true_negative
@@ -98,7 +90,7 @@ def test_false_true_negative_positive(test_dataset, sig_prob, threshold) -> dict
     tpr = true_positive / signal
     fpr = false_positive / background
 
-    fnr = false_negtive / signal
+    fnr = false_negative / signal
     tnr = true_negative / background
 
     return {
