@@ -4,6 +4,8 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.metrics import auc, roc_curve
+from xgboost import XGBClassifier
 
 BASE_NAMES = [name for name in load_file(RAWFILES.SIGNAL)]
 
@@ -110,13 +112,45 @@ def test_false_true_negative_positive(model, test_dataset, threshold) -> dict:
     }
 
 
-def roc_curve(model, test_dataset):
+def roc_curve(model, test_data):
     # Jose
-    pass
+    '''
+    Implement the following model before this function:
+        model = XGBClassifier()
+        model.fit(training_data[training_columns], training_data['category'])
+        model.predict_proba(test_data[training_columns].head())
+    This returns an array of N_samples by N_classes. 
+    The first column is the probability that the candiate is category 0 (background).
+    The second column is the probability that the candidate is category 1 (signal).
 
-def plot_roc_curve():
+    The Receiver Operating Characteristic curve given by this function shows the efficiency of the classifier 
+    on signal (true positive rate, tpr) against the inefficiency of removing background (false positive 
+    rate, fpr). Each point on this curve corresponds to a cut value threshold.
+    '''
+
+    sp = model.predict_proba(test_data[training_columns])[:,1]
+    fpr, tpr, cut_values = roc_curve(test_data['category'], sp)
+    area = auc(fpr, tpr)
+    
+    return {
+        'fpr': fpr,
+        'tpr': tpr,
+        'cut_values': cut_values,
+        'area': area
+    }
+
+def plot_roc_curve(fpr, tpr, area):
     # Jose
-    pass
+    
+    plt.plot([0, 1], [0, 1], color='deepskyblue', linestyle='--', label='Random guess')
+    plt.plot(fpr, tpr, color='darkblue', label=f'ROC curve (area = {area:.2f})')
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.xlim(0.0, 1.0)
+    plt.ylim(0.0, 1.0)
+    plt.legend(loc='lower right')
+    plt.gca().set_aspect('equal', adjustable='box')
+    plt.show()
 
 def test_sb(model, test_dataset, threshold):
     # Jiayang
