@@ -2,7 +2,7 @@ from core import load_file, RAWFILES
 import ml_tools
 import pandas as pd
 
-def get_test_train():
+def get_test_train(train_samples_limit=None):
     total_dataset = load_file(RAWFILES.TOTAL_DATASET)
 
     signal_dataset = load_file(RAWFILES.SIGNAL)
@@ -23,7 +23,7 @@ def get_test_train():
     for df in [peaking_bks_test, peaking_bks_train, sig_test, sig_train]:
         ml_tools.ml_strip_columns(df, inplace=True)
 
-    train_data = ml_tools.ml_combine_signal_bk(sig_train[:100000], peaking_bks_train[:100000])
+    train_data = ml_tools.ml_combine_signal_bk(sig_train[:train_samples_limit], peaking_bks_train[:train_samples_limit])
     test_data = ml_tools.ml_combine_signal_bk(sig_test, peaking_bks_test)
 
     return train_data, test_data

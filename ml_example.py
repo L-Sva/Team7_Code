@@ -5,11 +5,11 @@ import matplotlib.pyplot as plt
 import os
 import ml_peakingbks_test_train
 
-train_data, test_data = ml_peakingbks_test_train.get_test_train()
+train_data, test_data = ml_peakingbks_test_train.get_test_train(train_samples_limit=100000)
 
 xgboost.set_config(verbosity=2)
 xge_model = xgboost.XGBClassifier(
-    max_depth=6
+    max_depth=10
 )
 
 LOAD = False
