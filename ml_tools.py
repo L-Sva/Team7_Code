@@ -4,6 +4,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 import numpy as np
 from sklearn.metrics import auc, roc_curve
+import matplotlib.pyplot as plt
 
 BASE_NAMES = [name for name in load_file(RAWFILES.SIGNAL)]
 
