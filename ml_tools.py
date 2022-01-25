@@ -3,7 +3,7 @@ from core import RAWFILES, load_file
 import pandas as pd
 from sklearn.model_selection import train_test_split
 import numpy as np
-from sklearn.metrics import auc, roc_curve
+from sklearn import metrics
 import matplotlib.pyplot as plt
 
 BASE_NAMES = [name for name in load_file(RAWFILES.SIGNAL)]
@@ -105,8 +105,9 @@ def test_false_true_negative_positive(test_dataset, sig_prob, threshold) -> dict
     }
 
 
-def roc_curve(model, test_data):
+def roc_curve(test_data, sp):
     # Jose
+    # Why the use of .head() on the fourth line of this docstring?
     '''
     Implement the following model before this function:
         model = XGBClassifier()
@@ -121,9 +122,8 @@ def roc_curve(model, test_data):
     rate, fpr). Each point on this curve corresponds to a cut value threshold.
     '''
 
-    sp = model.predict_proba(test_data[training_columns])[:,1]
-    fpr, tpr, cut_values = roc_curve(test_data['category'], sp)
-    area = auc(fpr, tpr)
+    fpr, tpr, cut_values = metrics.roc_curve(test_data['category'], sp)
+    area = metrics.auc(fpr, tpr)
     
     return {
         'fpr': fpr,
@@ -143,7 +143,7 @@ def plot_roc_curve(fpr, tpr, area):
     plt.ylim(0.0, 1.0)
     plt.legend(loc='lower right')
     plt.gca().set_aspect('equal', adjustable='box')
-    plt.show()
+    #plt.show()
 
 def test_sb(test_dataset, sig_prob, threshold):
     # Jiayang

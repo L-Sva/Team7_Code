@@ -29,6 +29,10 @@ else:
 
 sig_prob = ml_tools.ml_get_model_sig_prob(test_data, xge_model) # signal probability from bdt model
 
+roc_curve_res = ml_tools.roc_curve(test_data, sig_prob)
+ml_tools.plot_roc_curve(roc_curve_res['fpr'],roc_curve_res['tpr'],roc_curve_res['area'])
+plt.show()
+
 threshold_list = np.linspace(0.8,1,600)
 sb_list = []
 for thresh in threshold_list:
@@ -37,7 +41,7 @@ for thresh in threshold_list:
 plt.plot(threshold_list, sb_list)
 plt.xlabel('Cut value')
 plt.ylabel('$S / \\sqrt{S + B}$')
-# plt.show()
+plt.show()
 plt.close()
 
 bestIx = np.nanargmax(np.array(sb_list))
