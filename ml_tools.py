@@ -107,20 +107,21 @@ def test_false_true_negative_positive(test_dataset, sig_prob, threshold) -> dict
 
 def roc_curve(test_data, sp):
     # Jose
+    # Why the use of .head() on the fourth line of this docstring?
     '''
     Implement the following model before this function:
         model = XGBClassifier()
         model.fit(training_data[training_columns], training_data['category'])
-        sp = model.predict_proba(test_data[training_columns])[:,1]
-        model.predict_proba(test_data[training_columns])
+        model.predict_proba(test_data[training_columns].head())
     This returns an array of N_samples by N_classes. 
     The first column is the probability that the candiate is category 0 (background).
-    The second column (sp) is the probability that the candidate is category 1 (signal).
+    The second column is the probability that the candidate is category 1 (signal).
 
     The Receiver Operating Characteristic curve given by this function shows the efficiency of the classifier 
     on signal (true positive rate, tpr) against the inefficiency of removing background (false positive 
     rate, fpr). Each point on this curve corresponds to a cut value threshold.
     '''
+
     fpr, tpr, cut_values = metrics.roc_curve(test_data['category'], sp)
     area = metrics.auc(fpr, tpr)
     
@@ -142,7 +143,6 @@ def plot_roc_curve(fpr, tpr, area):
     plt.ylim(0.0, 1.0)
     plt.legend(loc='lower right')
     plt.gca().set_aspect('equal', adjustable='box')
-    
     #plt.show()
 
 def test_sb(test_dataset, sig_prob, threshold):
