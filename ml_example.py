@@ -14,7 +14,7 @@ xgboost.set_config(verbosity=2)
 
 # Initialise model, some model parameters are passed here
 xge_model = xgboost.XGBClassifier(
-    max_depth=10
+    max_depth=10,
 )
 
 LOAD_FROM_SAVED = True

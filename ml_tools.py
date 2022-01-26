@@ -5,8 +5,6 @@ from sklearn.model_selection import train_test_split
 import numpy as np
 from sklearn import metrics
 import matplotlib.pyplot as plt
-from sklearn.metrics import auc, roc_curve
-from xgboost import XGBClassifier
 
 BASE_NAMES = [name for name in load_file(RAWFILES.SIGNAL)]
 
@@ -107,7 +105,7 @@ def test_false_true_negative_positive(test_dataset, sig_prob, threshold) -> dict
     }
 
 
-def roc_function(test_data, sp):
+def roc_curve(test_data, sp):
     # Jose
     '''
     Implement the following model before this function:
