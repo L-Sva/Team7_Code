@@ -17,7 +17,8 @@ def plot_hist_quantity(df,column,bins=100,range=None,label=None):
         plt.errorbar(
             x=bin_centres, y=h_density,
             # Need to use this to get correct sized errorbars on a histogram with density=True
-            yerr=np.sqrt(h) / h * h_density, 
+            # yerr = 0 for h = 0
+            yerr= np.divide(np.sqrt(h), h, out = np.zeros(h.shape, dtype='float'), where = h!=0) * h_density, 
             xerr=half_binwidths, capsize=3, ls='', label=label)
         plt.xlabel(column)
         plt.ylabel('Probability density')

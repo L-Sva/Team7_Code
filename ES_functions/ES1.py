@@ -19,3 +19,11 @@ def ES1(dataframe):
     not_subset = dataframe.iloc[not_subset]
 
     return subset, not_subset
+
+def alt_ES1(data):
+    q2 = data['q2']
+    crit_a = (q2 > 8) & (q2 < 11) #criteria A
+    crit_b = (q2 > 12.5) & (q2 < 15) #criteria B
+    subset = data[~crit_a & ~crit_b] #not crit_a and not crit_b
+    not_subset = data[crit_a | crit_b] # crit_a or crit_b
+    return subset, not_subset

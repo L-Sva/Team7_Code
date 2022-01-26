@@ -37,3 +37,7 @@ def example_selector(dataframe):
     subset = dataframe[dataframe['B0_MM'] < 5350]
     not_subset = dataframe[dataframe['B0_MM'] > 5350]
     return subset, not_subset
+
+# combining selectors
+
+# selector - output as additional column instead of pair of subsets
