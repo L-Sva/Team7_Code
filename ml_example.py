@@ -5,10 +5,10 @@ import xgboost
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-import ml_peakingbks_test_train
+import ml_load
 
 # Use module to get prepared train/test data
-train_data, test_data = ml_peakingbks_test_train.get_test_train(train_samples_limit=100000)
+train_data, test_data = ml_load.get_test_train_for_all_peaking_bks(train_samples_limit=100000)
 
 # Make more logging information available
 xgboost.set_config(verbosity=2)
