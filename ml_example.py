@@ -1,3 +1,4 @@
+from pyexpat import model
 from histrogram_plots import generic_selector_plot
 import ml_tools
 import xgboost
@@ -38,7 +39,7 @@ else:
 sig_prob = ml_tools.ml_get_model_sig_prob(test_data, xge_model) # signal probability from bdt model
 
 # plotting roc_curve
-roc_curve_res = ml_tools.roc_curve(test_data, sig_prob)
+roc_curve_res = ml_tools.roc_curve(xge_model, test_data)
 ml_tools.plot_roc_curve(roc_curve_res['fpr'],roc_curve_res['tpr'],roc_curve_res['area'])
 plt.show()
 

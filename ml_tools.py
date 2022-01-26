@@ -105,7 +105,7 @@ def test_false_true_negative_positive(test_dataset, sig_prob, threshold) -> dict
     }
 
 
-def roc_curve(test_data, sp):
+def roc_curve(model, test_data):
     # Jose
     '''
     Test data needs to be in pandas dataframe format.
@@ -123,6 +123,7 @@ def roc_curve(test_data, sp):
     rate, fpr). Each point on this curve corresponds to a cut value threshold.
     '''
 
+    sp = ml_get_model_sig_prob(test_data, model)
     fpr, tpr, cut_values = metrics.roc_curve(test_data['category'], sp)
     area = metrics.auc(fpr, tpr)
     
