@@ -41,11 +41,17 @@ def ml_train_model(training_data, model, **kwargs):
     model.fit(train_vars, training_data['category'].to_numpy(), **kwargs)
     return model
 
-def ml_prepare_test_train(dataset, randomiser_seed = 1) -> Tuple[pd.DataFrame, pd.DataFrame]:
+def ml_prepare_train_test(dataset, randomiser_seed = 1) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """Takes a dataset and splits it into test and train datasets"""
     # Marek
     train, test = train_test_split(dataset, test_size = 0.2, random_state=randomiser_seed)
     return train, test
+
+def ml_prepare_train_validate_test(dataset, randomiser_seed_a = 1, randomiser_seed_b = 2) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+
+    train_validate, test = ml_prepare_train_test(dataset, randomiser_seed = randomiser_seed_a)
+    train, validate = ml_prepare_train_test(train_validate, randomiser_seed = randomiser_seed_b)
+    return train, validate, test
 
 
 def ml_combine_signal_bk(signal_dataset, background_dataset):

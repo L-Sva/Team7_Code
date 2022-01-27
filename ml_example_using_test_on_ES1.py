@@ -7,7 +7,7 @@ import ml_load
 import pandas as pd
 import matplotlib.pyplot as plt
 
-train_data, test_data = ml_load.get_test_train_for_all_peaking_bks()
+train_data, test_data = ml_load.get_train_test_for_all_peaking_bks()
 
 s, ns = ES1(test_data)
 s['pred'] = 1
