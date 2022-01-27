@@ -1,7 +1,9 @@
 from core import B0_MM_selector, load_file, RAWFILES, combine_n_selectors
 from ES_functions.Compiled import (q2_resonances, Kstar_inv_mass, B0_vertex_chi2,
  final_state_particle_IP, B0_IP_chi2, FD, DIRA, Particle_ID)
-from histrogram_plots import generic_selector_plot, plot_hist_quantity
+from histrogram_plots import generic_selector_plot
+import itertools
+import numpy as np
 import matplotlib.pyplot as plt
 
 both = combine_n_selectors(q2_resonances, B0_vertex_chi2, B0_MM_selector)
@@ -11,6 +13,43 @@ s, ns = both(total_dataset, B0_vertex_chi2 = 0.2)
 
 print(len(s),len(ns))
 
-generic_selector_plot(total_dataset, s, ns, 'q2')
-generic_selector_plot(total_dataset, s, ns, 'B0_ENDVERTEX_CHI2')
-generic_selector_plot(total_dataset, s, ns, 'B0_MM')
+#generic_selector_plot(total_dataset, s, ns, 'q2')
+#generic_selector_plot(total_dataset, s, ns, 'B0_ENDVERTEX_CHI2')
+#generic_selector_plot(total_dataset, s, ns, 'B0_MM')
+
+selectors = (q2_resonances, Kstar_inv_mass, B0_vertex_chi2,
+ final_state_particle_IP, B0_IP_chi2, FD, DIRA)
+
+params = {
+    'B0_vertex_chi2': 0.2,
+    'final_state_particle_IP': 0.02, 
+    'B0_IP_chi2': 9, 
+    'FD': 10, 
+    'DIRA': 0.9999999,
+}
+
+pairs = list(itertools.combinations(selectors, 3))
+remaining_events = [
+    len(combine_n_selectors(*pair)(total_dataset, **params)[0]) for pair in pairs
+]
+
+ix = np.argsort(remaining_events)
+
+pairs = np.array(pairs)[ix]
+remaining_events = np.array(remaining_events)[ix]
+
+print('Most restrictive selector combinations')
+for i in range(10):
+    print([selector.__name__ for selector in pairs[i]], remaining_events[i])
+
+# Output for pairs
+# ['q2_resonances', 'DIRA'] 2284
+# ['q2_resonances', 'B0_vertex_chi2'] 13989
+# ['q2_resonances', 'FD'] 15738
+# ['q2_resonances', 'final_state_particle_IP'] 26196
+# ['q2_resonances', 'Kstar_inv_mass'] 29704
+# ['B0_vertex_chi2', 'DIRA'] 32630
+# ['Kstar_inv_mass', 'DIRA'] 34870
+# ['FD', 'DIRA'] 43664
+# ['final_state_particle_IP', 'DIRA'] 43714
+# ['q2_resonances', 'B0_IP_chi2'] 45440

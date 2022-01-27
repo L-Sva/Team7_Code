@@ -158,8 +158,9 @@ def Particle_ID(dataframe_1):
 def selection_all(dataframe, B0_vertex_prob_threshold=0.2, \
     final_particle_prob_threshold=0.02, B0_IP_chi2_threshold=9., \
         B0_FD_threshold=10., DIRA_threshold=0.9999999):
+
     yes_PID, no_PID = Particle_ID(dataframe)
-    
+    print('Particle ID done')
     yes_q2, no_q2 = q2_resonances(yes_PID)
     
     yes_Kstar_mass, no_Kstar_mass = Kstar_inv_mass(yes_q2)
@@ -187,6 +188,7 @@ if __name__ == "__main__":
     import pandas as pd
     total_dataset = pd.read_pickle('data/total_dataset.pkl')
     selected, not_selected = selection_all(total_dataset)
+    print(len(selected), len(not_selected))
 
 # Only 216 events selected (possibly tweek thresholds)
 # %%
