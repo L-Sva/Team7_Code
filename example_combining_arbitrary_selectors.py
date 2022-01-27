@@ -53,3 +53,15 @@ for i in range(10):
 # ['FD', 'DIRA'] 43664
 # ['final_state_particle_IP', 'DIRA'] 43714
 # ['q2_resonances', 'B0_IP_chi2'] 45440
+
+# Output for combinations of 3 selectors
+# ['q2_resonances', 'Kstar_inv_mass', 'DIRA'] 1389
+# ['q2_resonances', 'B0_vertex_chi2', 'DIRA'] 1493
+# ['q2_resonances', 'final_state_particle_IP', 'DIRA'] 2080
+# ['q2_resonances', 'FD', 'DIRA'] 2087
+# ['q2_resonances', 'B0_IP_chi2', 'DIRA'] 2273
+# ['q2_resonances', 'B0_vertex_chi2', 'FD'] 6444
+# ['q2_resonances', 'Kstar_inv_mass', 'B0_vertex_chi2'] 8250
+# ['q2_resonances', 'Kstar_inv_mass', 'FD'] 8831
+# ['q2_resonances', 'B0_vertex_chi2', 'final_state_particle_IP'] 10220
+# ['q2_resonances', 'final_state_particle_IP', 'FD'] 10808
