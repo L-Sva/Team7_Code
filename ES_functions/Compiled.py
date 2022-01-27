@@ -183,9 +183,10 @@ def selection_all(dataframe, B0_vertex_prob_threshold=0.2, \
     return subset, not_subset
 
 # %% Test
-import pandas as pd
-total_dataset = pd.read_pickle('data/total_dataset.pkl')
-selected, not_selected = selection_all(total_dataset)
+if __name__ == "__main__":
+    import pandas as pd
+    total_dataset = pd.read_pickle('data/total_dataset.pkl')
+    selected, not_selected = selection_all(total_dataset)
 
 # Only 216 events selected (possibly tweek thresholds)
 # %%
