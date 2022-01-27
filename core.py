@@ -33,11 +33,23 @@ def save_file(dataframe ,filename, foldername):
     with open(path.join(foldername, filename),'wb') as file:
         pickle.dump(dataframe,file)
     
-def example_selector(dataframe):
+def B0_MM_selector(dataframe):
     subset = dataframe[dataframe['B0_MM'] < 5350]
     not_subset = dataframe[dataframe['B0_MM'] > 5350]
     return subset, not_subset
 
-# combining selectors
+def combine_n_selectors(*selectors):
+    def combined_selectors(data_set, **kwargs):
+        expected = []
+        for selector in selectors:
+            expected.append([kwargs[key] for key in (selector.__name__,) if key in kwargs])
+        no = []
+        yes = data_set
+        print(expected)
+        for i, selector in enumerate(selectors):
+            yes, no_sel = selector(yes, *expected[i])
+            no.append(no_sel)
+        return yes, pd.concat(no)
+    return combined_selectors
 
 # selector - output as additional column instead of pair of subsets

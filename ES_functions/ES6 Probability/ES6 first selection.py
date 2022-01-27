@@ -10,7 +10,7 @@ Created on Thu Jan 20 17:24:13 2022
 
 import pandas as pd
 import numpy as np
-from core import load_file, example_selector, save_file
+from core import load_file, B0_MM_selector, save_file
 import matplotlib.pyplot as plt
 
 # Allows file to be loaded as a module to allow reuse of functions defined above this line
