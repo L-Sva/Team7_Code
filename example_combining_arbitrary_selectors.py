@@ -28,7 +28,7 @@ params = {
     'DIRA': 0.9999999,
 }
 
-pairs = list(itertools.combinations(selectors, 3))
+pairs = list(itertools.combinations(selectors, 2))
 remaining_events = [
     len(combine_n_selectors(*pair)(total_dataset, **params)[0]) for pair in pairs
 ]
