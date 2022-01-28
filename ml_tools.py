@@ -6,6 +6,10 @@ import numpy as np
 from sklearn import metrics
 import matplotlib.pyplot as plt
 
+from bayes_opt import BayesianOptimization
+from bayes_opt import UtilityFunction
+
+
 BASE_NAMES = [name for name in load_file(RAWFILES.SIGNAL)]
 
 def ml_strip_columns(dataframe,
@@ -120,19 +124,19 @@ def roc_curve(model, test_data):
         model.fit(training_data[training_columns], training_data['category'])
         sp = model.predict_proba(test_data[training_columns])[:,1]
         model.predict_proba(test_data[training_columns])
-    This returns an array of N_samples by N_classes. 
+    This returns an array of N_samples by N_classes.
     The first column is the probability that the candiate is category 0 (background).
     The second column (sp) is the probability that the candidate is category 1 (signal).
 
-    The Receiver Operating Characteristic curve given by this function shows the efficiency of the classifier 
-    on signal (true positive rate, tpr) against the inefficiency of removing background (false positive 
+    The Receiver Operating Characteristic curve given by this function shows the efficiency of the classifier
+    on signal (true positive rate, tpr) against the inefficiency of removing background (false positive
     rate, fpr). Each point on this curve corresponds to a cut value threshold.
     '''
 
     sp = ml_get_model_sig_prob(test_data, model)
     fpr, tpr, cut_values = metrics.roc_curve(test_data['category'], sp)
     area = metrics.auc(fpr, tpr)
-    
+
     return {
         'fpr': fpr,
         'tpr': tpr,
@@ -142,7 +146,7 @@ def roc_curve(model, test_data):
 
 def plot_roc_curve(fpr, tpr, area):
     # Jose
-    
+
     plt.plot([0, 1], [0, 1], color='deepskyblue', linestyle='--', label='Random guess')
     plt.plot(fpr, tpr, color='darkblue', label=f'ROC curve (area = {area:.2f})')
     plt.xlabel('False Positive Rate')
@@ -163,3 +167,26 @@ def test_sb(test_dataset, sig_prob, threshold):
     metric = S/np.sqrt(S+B)
 
     return metric
+
+
+def bayesian_optimisation(f, pbounds):
+    """
+    return:
+        {'target': 123, 'params': {'x': 123, 'y': 123}}
+
+    note:
+        target = f(params)
+    """
+    optimizer = BayesianOptimization(f, pbounds, verbose=2, random_state=1,)
+
+    # run once to get a parameter set
+    utility = UtilityFunction(kind="ucb",kappa=2.5,xi=0.0)
+    next_point = optimizer.suggest(utility)
+    target = black_box_function(**next_point)
+    result = {'target':target, 'params': next_point}
+
+    # run a few times to get a parameter set that gives the max
+    # optimizer.maximize(init_points = 2, n_iter = 1,)
+    # result = optimizer.max
+
+    return result
