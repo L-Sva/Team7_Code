@@ -169,24 +169,41 @@ def test_sb(test_dataset, sig_prob, threshold):
     return metric
 
 
-def bayesian_optimisation(f, pbounds):
+def bayesian_nextpoint(function, pbounds, random_state=1, **util_args):
     """
-    return:
-        {'target': 123, 'params': {'x': 123, 'y': 123}}
+    input:
+        random_state: int, default = 1
+            can be an integer for consistent outputs, or None for random outputs
 
-    note:
-        target = f(params)
+        util_args: dict
+            tweak this (or random_state) to get different params each time,
+            for example, util_args = {'kind':"ucb", 'kappa':2.5,'xi':0.0}
+
+    output:
+        next_point : dict
+            a set of params within pbounds, for example: {'x': 123, 'y': 123}
     """
-    optimizer = BayesianOptimization(f, pbounds, verbose=2, random_state=1,)
+    optimizer = BayesianOptimization(function, pbounds, verbose=2, random_state=random_state)
 
-    # run once to get a parameter set
-    utility = UtilityFunction(kind="ucb",kappa=2.5,xi=0.0)
+    utility = UtilityFunction(**util_args)
     next_point = optimizer.suggest(utility)
-    target = black_box_function(**next_point)
-    result = {'target':target, 'params': next_point}
+    print("next_point:", next_point)
 
-    # run a few times to get a parameter set that gives the max
-    # optimizer.maximize(init_points = 2, n_iter = 1,)
-    # result = optimizer.max
+    return next_point
 
-    return result
+def bayesian_optimisation(function, pbounds):
+    """
+    runs function to find optimal parameters
+
+    output:
+        result : dict
+            for example, {'target': 123, 'params': {'x': 123, 'y': 123}}
+            where target = function(params)
+    """
+    print('====== start bayesian optimisation ======')
+    optimizer = BayesianOptimization(function, pbounds, verbose=2, random_state=1,)
+    optimizer.maximize(init_points = 2, n_iter = 1,)
+    result = optimizer.max
+    print('====== end bayesian optimisation ======')
+
+    return
