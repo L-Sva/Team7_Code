@@ -23,7 +23,9 @@ def ml_train_validate_to_be_optimized(**hyperparams):
 def ml_train_validate(**hyperparams):
 
     # 1. get data
-    train_data, validate_data, test_data = ml_load.get_train_validate_test_for_all_peaking_bks(train_samples_limit=100000)
+    train_data, validate_data, test_data = (
+        ml_load.get_train_validate_test_for_all_peaking_bks(train_samples_limit=1000)
+    )
 
     # 2. settings
     xgboost.set_config(verbosity=2)
@@ -53,7 +55,7 @@ def ml_train_validate(**hyperparams):
 
     # 5. save model
     MODEL_FILE_NAME = 'peaking_sb_{}_{}.model'.format(bestSb, json.dumps(hyperparams))
-    xge_model.save_model(os.path.join('examples_save',MODEL_FILE_NAME))
+    xge_model.save_model(os.path.join('optimisation_models',MODEL_FILE_NAME))
 
     return bestSb
 
