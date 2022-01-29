@@ -54,7 +54,11 @@ def ml_train_validate(**hyperparams):
     print('sb', bestSb)
 
     # 5. save model
-    MODEL_FILE_NAME = 'peaking_sb_{}_{}.model'.format(bestSb, json.dumps(hyperparams))
+    MODEL_FILE_NAME = 'peaking_sb_{}_'.format(bestSb)
+    for i in hyperparams:
+        MODEL_FILE_NAME = MODEL_FILE_NAME + str(i) +'_'+ str(hyperparams[i]) +'_'
+    MODEL_FILE_NAME = MODEL_FILE_NAME + '.model'
+
     xge_model.save_model(os.path.join('optimisation_models',MODEL_FILE_NAME))
 
     return bestSb
@@ -70,9 +74,9 @@ pbounds = {
     }
 
 # bayesian_nextpoint -- example 1
-util_args = {'kind':"ucb", 'kappa':2.5,'xi':0.0}
-next_point = ml_tools.bayesian_nextpoint(ml_train_validate_to_be_optimized, pbounds, random_state=None, **util_args)
-ml_train_validate_to_be_optimized(**next_point)  # train model
+# util_args = {'kind':"ucb", 'kappa':2.5,'xi':0.0}
+# next_point = ml_tools.bayesian_nextpoint(ml_train_validate_to_be_optimized, pbounds, random_state=None, **util_args)
+# ml_train_validate_to_be_optimized(**next_point)  # train model
 
 # bayesian_optimisation -- example 2
 # ml_tools.bayesian_optimisation(ml_train_validate_to_be_optimized, pbounds)
