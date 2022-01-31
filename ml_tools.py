@@ -171,6 +171,10 @@ def test_sb(test_dataset, sig_prob, threshold):
 
 def bayesian_nextpoint(function, pbounds, random_state=1, **util_args):
     """
+    Suggestion:
+        Not to use this, but use the bayesian_optimisation function below.
+        bc it does not perform optimisation continuously.
+
     input:
         random_state: int, default = 1
             can be an integer for consistent outputs, or None for random outputs
@@ -191,7 +195,7 @@ def bayesian_nextpoint(function, pbounds, random_state=1, **util_args):
 
     return next_point
 
-def bayesian_optimisation(function, pbounds):
+def bayesian_optimisation(function, pbounds, explore_runs = 2, exploit_runs = 1):
     """
     runs function to find optimal parameters
 
@@ -202,7 +206,7 @@ def bayesian_optimisation(function, pbounds):
     """
     print('====== start bayesian optimisation ======')
     optimizer = BayesianOptimization(function, pbounds, verbose=2, random_state=1,)
-    optimizer.maximize(init_points = 2, n_iter = 1,)
+    optimizer.maximize(init_points = explore_runs, n_iter = exploit_runs,)
     result = optimizer.max
     print('====== end bayesian optimisation ======')
 
