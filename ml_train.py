@@ -67,10 +67,13 @@ def ml_train_validate(**hyperparams):
 # examples
 # bounded region of hyperparameters - arbitrary
 pbounds = {
-    'n_estimators':(10,1000),
-    'subsample':(0,1),
+    'n_estimators':(100,200),
+    'subsample':(0.5,1),
     'max_depth':(6,20),
     'learning_rate':(0.01, 0.3),
+    # 'gamma':(0,0.02),
+    # 'reg_alpha':(0,3),
+    # 'reg_lambda':(1,4),
     }
 
 # bayesian_nextpoint -- example 1
