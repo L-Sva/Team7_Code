@@ -10,6 +10,7 @@ from bayes_opt import BayesianOptimization
 from bayes_opt import UtilityFunction
 from bayes_opt.logger import JSONLogger
 from bayes_opt.event import Events
+from bayes_opt.util import load_logs
 
 BASE_NAMES = [name for name in load_file(RAWFILES.SIGNAL)]
 
@@ -196,7 +197,8 @@ def bayesian_nextpoint(function, pbounds, random_state=1, **util_args):
 
     return next_point
 
-def bayesian_optimisation(function, pbounds, log_path, explore_runs = 2, exploit_runs = 1):
+def bayesian_optimisation(function, 
+    pbounds, log_path, bool_load_logs = False, explore_runs = 2, exploit_runs = 1):
     """
     runs function to find optimal parameters
 
@@ -208,6 +210,8 @@ def bayesian_optimisation(function, pbounds, log_path, explore_runs = 2, exploit
     print('====== start bayesian optimisation ======')
     logger = JSONLogger(path=log_path)
     optimizer = BayesianOptimization(function, pbounds, verbose=2, random_state=1,)
+    if bool_load_logs:
+        bool_load_logs(optimizer, logs=[log_path]);
     optimizer.subscribe(Events.OPTIMIZATION_STEP, logger)
     optimizer.maximize(init_points = explore_runs, n_iter = exploit_runs,)
     print('====== end bayesian optimisation ======')
