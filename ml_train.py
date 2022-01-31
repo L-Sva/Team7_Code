@@ -71,7 +71,7 @@ def ml_train_validate(**hyperparams):
 pbounds = {
     'n_estimators':(100,500),
     'subsample':(0.5,1),
-    'max_depth':(6,20),
+    'max_depth':(3,20),
     'learning_rate':(0.01, 0.3),
     'gamma':(0,0.02),
     'reg_alpha':(0,3),
