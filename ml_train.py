@@ -24,7 +24,7 @@ def ml_train_validate(**hyperparams):
 
     # 1. get data
     train_data, validate_data, test_data = (
-        ml_load.get_train_validate_test_for_all_peaking_bks(train_samples_limit=100000)
+        ml_load.get_train_validate_test_for_all_peaking_bks(train_samples_limit=None)
     )
 
     # 2. settings
@@ -73,9 +73,9 @@ pbounds = {
     'subsample':(0.5,1),
     'max_depth':(6,20),
     'learning_rate':(0.01, 0.3),
-    # 'gamma':(0,0.02),
-    # 'reg_alpha':(0,3),
-    # 'reg_lambda':(1,4),
+    'gamma':(0,0.02),
+    'reg_alpha':(0,3),
+    'reg_lambda':(1,4),
     }
 
 # bayesian_nextpoint -- example 1
@@ -87,6 +87,7 @@ pbounds = {
 ml_tools.bayesian_optimisation(
     ml_train_validate_to_be_optimized,
     pbounds,
+    log_path = os.path.join('optimisation_models','logs.json'),
     explore_runs = 2,
     exploit_runs = 1
     )

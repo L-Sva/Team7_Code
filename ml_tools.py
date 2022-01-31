@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 
 from bayes_opt import BayesianOptimization
 from bayes_opt import UtilityFunction
-
+from bayes_opt.logger import JSONLogger
+from bayes_opt.event import Events
 
 BASE_NAMES = [name for name in load_file(RAWFILES.SIGNAL)]
 
@@ -195,7 +196,7 @@ def bayesian_nextpoint(function, pbounds, random_state=1, **util_args):
 
     return next_point
 
-def bayesian_optimisation(function, pbounds, explore_runs = 2, exploit_runs = 1):
+def bayesian_optimisation(function, pbounds, log_path, explore_runs = 2, exploit_runs = 1):
     """
     runs function to find optimal parameters
 
@@ -205,9 +206,10 @@ def bayesian_optimisation(function, pbounds, explore_runs = 2, exploit_runs = 1)
             where target = function(params)
     """
     print('====== start bayesian optimisation ======')
+    logger = JSONLogger(path=log_path)
     optimizer = BayesianOptimization(function, pbounds, verbose=2, random_state=1,)
+    optimizer.subscribe(Events.OPTIMIZATION_STEP, logger)
     optimizer.maximize(init_points = explore_runs, n_iter = exploit_runs,)
-    result = optimizer.max
     print('====== end bayesian optimisation ======')
 
-    return
+    return optimizer
