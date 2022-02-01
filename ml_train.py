@@ -1,5 +1,5 @@
 import ml_load
-import ml_tools
+import ml_tools, ml_combinatorial_extraction
 from pyexpat import model
 import xgboost
 import json
@@ -10,22 +10,31 @@ import numpy as np
 train and validate models using params from BayesianOptimization
 """
 
-def ml_train_validate_to_be_optimized(**hyperparams):
-    """
-    Convert some hyperparams to integer values for ml_train_validate
-    """
-    hyperparams['n_estimators'] = int(hyperparams['n_estimators'] )
-    hyperparams['max_depth'] = int(hyperparams['max_depth'])
+TRAIN_COMB_BK = True
 
-    return ml_train_validate(**hyperparams)
+SAVE_FOLDER = 'optimisation_models'
+if TRAIN_COMB_BK:
+    SAVE_FOLDER = 'optimisation_models_comb'
 
+def ml_train_validate_combinatorial(**hyperparms):
+    train, validate, test = (
+        ml_combinatorial_extraction.load_combinatorial_train_validate_test())
 
-def ml_train_validate(**hyperparams):
+    return ml_train_validate(train, validate)
 
+def ml_train_validate_peaking(**hyperparams):
     # 1. get data
     train_data, validate_data, test_data = (
         ml_load.get_train_validate_test_for_all_peaking_bks(train_samples_limit=None)
     )
+
+    return ml_train_validate(train_data, validate_data, **hyperparams)
+
+
+def ml_train_validate(train_data, validate_data, **hyperparams, ):
+    # Convert some hyperparams to integer values
+    hyperparams['n_estimators'] = int(hyperparams['n_estimators'] )
+    hyperparams['max_depth'] = int(hyperparams['max_depth'])
 
     # 2. settings
     xgboost.set_config(verbosity=2)
@@ -61,7 +70,7 @@ def ml_train_validate(**hyperparams):
         MODEL_FILE_NAME = MODEL_FILE_NAME + str(i) +'_'+ str(hyperparams[i]) +'_'
     MODEL_FILE_NAME = MODEL_FILE_NAME + '.model'
 
-    xge_model.save_model(os.path.join('optimisation_models',MODEL_FILE_NAME))
+    xge_model.save_model(os.path.join(SAVE_FOLDER,MODEL_FILE_NAME))
 
     return bestSb
 
@@ -84,13 +93,18 @@ pbounds = {
 # ml_train_validate_to_be_optimized(**next_point)  # train model
 
 # bayesian_optimisation -- example 2
+if TRAIN_COMB_BK:
+    train_func = ml_train_validate_combinatorial
+else:
+    train_func = ml_train_validate_peaking
+
 optimizer = ml_tools.bayesian_optimisation(
-    ml_train_validate_to_be_optimized,
+    train_func
     pbounds,
-    log_folder = os.path.join('optimisation_models'),
+    log_folder = os.path.join(SAVE_FOLDER),
     bool_load_logs = True,
-    #explore_runs = 12, exploit_runs = 100
-    explore_runs = 0, exploit_runs = 0
+    explore_runs = 12, exploit_runs = 100
+    #explore_runs = 0, exploit_runs = 0
     )
 
 for i, res in enumerate(optimizer.res):

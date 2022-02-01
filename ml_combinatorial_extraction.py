@@ -18,7 +18,7 @@ def load_combinatorial_train_validate_test():
     bks_train, bks_validate, bks_test = ml_tools.ml_prepare_train_validate_test(bk_data)
 
     for df in [sig_train, sig_validate, sig_test, bks_train, bks_validate, bks_test]:
-        ml_tools.ml_strip_columns(df, inplace=True, reject_column_names=('B0_MM'))
+        ml_tools.ml_strip_columns(df, inplace=True, reject_column_names=('B0_MM','Kstar_MM'))
 
     train_data = ml_tools.ml_combine_signal_bk(sig_train, bks_train)
     validate_data = ml_tools.ml_combine_signal_bk(sig_validate, bks_validate)
