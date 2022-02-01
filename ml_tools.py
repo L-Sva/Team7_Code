@@ -12,6 +12,8 @@ from bayes_opt.logger import JSONLogger
 from bayes_opt.event import Events
 from bayes_opt.util import load_logs
 
+import os, time
+
 BASE_NAMES = [name for name in load_file(RAWFILES.SIGNAL)]
 
 def ml_strip_columns(dataframe,
@@ -198,7 +200,7 @@ def bayesian_nextpoint(function, pbounds, random_state=1, **util_args):
     return next_point
 
 def bayesian_optimisation(function, 
-    pbounds, log_path, bool_load_logs = False, explore_runs = 2, exploit_runs = 1):
+    pbounds, log_folder, bool_load_logs = True, explore_runs = 2, exploit_runs = 1):
     """
     runs function to find optimal parameters
 
@@ -208,12 +210,21 @@ def bayesian_optimisation(function,
             where target = function(params)
     """
     print('====== start bayesian optimisation ======')
-    logger = JSONLogger(path=log_path)
+    
     optimizer = BayesianOptimization(function, pbounds, verbose=2, random_state=1,)
     if bool_load_logs:
-        bool_load_logs(optimizer, logs=[log_path]);
+        log_folder_files = os.listdir(log_folder)
+        logs=[
+            os.path.join(log_folder, f) for f in log_folder_files if (
+                f[0:5] == 'logs_' and f[-5:] == '.json'
+            )
+        ]
+        load_logs(optimizer, logs=logs)
+    timestr = time.strftime("%Y%m%d-%H%M%S")
+    logger = JSONLogger(path=os.path.join(log_folder, f'logs_{timestr}'))
     optimizer.subscribe(Events.OPTIMIZATION_STEP, logger)
-    optimizer.maximize(init_points = explore_runs, n_iter = exploit_runs,)
+    if exploit_runs > 0 or exploit_runs > 0:
+        optimizer.maximize(init_points = explore_runs, n_iter = exploit_runs,)
     print('====== end bayesian optimisation ======')
 
     return optimizer

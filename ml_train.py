@@ -71,7 +71,7 @@ def ml_train_validate(**hyperparams):
 pbounds = {
     'n_estimators':(100,500),
     'subsample':(0.5,1),
-    'max_depth':(3,15),
+    'max_depth':(3,8),
     'learning_rate':(0.01, 0.3),
     'gamma':(0,0.02),
     'reg_alpha':(0,3),
@@ -84,11 +84,16 @@ pbounds = {
 # ml_train_validate_to_be_optimized(**next_point)  # train model
 
 # bayesian_optimisation -- example 2
-ml_tools.bayesian_optimisation(
+optimizer = ml_tools.bayesian_optimisation(
     ml_train_validate_to_be_optimized,
     pbounds,
-    log_path = os.path.join('optimisation_models','logs.json'),
-    bool_load_logs = False,
-    explore_runs = 2,
-    exploit_runs = 100
+    log_folder = os.path.join('optimisation_models'),
+    bool_load_logs = True,
+    #explore_runs = 12, exploit_runs = 100
+    explore_runs = 0, exploit_runs = 0
     )
+
+for i, res in enumerate(optimizer.res):
+    print("Iteration {}: \n\t{}".format(i, res))
+
+print('Best performance:', optimizer.max)
