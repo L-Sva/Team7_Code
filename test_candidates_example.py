@@ -43,5 +43,5 @@ for func in funclist:
     print('Testing selector', func.__name__)
     output[func.__name__] = (test_candidate_true_false_positive_negative(test,func))
 for key in output:
-    print(f'{key} | tpr: {output[key]["true-positive"]}, fpr: {output[key]["false-positive"]}, sb: {output[key]["SB Metric"]}')
+    print(f'{key} | tpr: {output[key]["true-positive"]:.4g}, fpr: {output[key]["false-positive"]:.4g}, sb: {output[key]["SB Metric"]:4g}')
 #30/01/2022: Error with Particle_ID func (and therefore selection_all func) - possibly due to ml_combine_signal_bk func used in line 9?
