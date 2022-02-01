@@ -82,9 +82,9 @@ plt.show()
 
 # Performance using ML and q2 selector
 # Should build generalised code to do this type of operation - being built by compling functions group
-print('Combining ML and q2 selectors')
-q2 = test_data["q2"]
-sig_prob[np.bitwise_and(q2 > 8, q2 < 11)] = 0
-sig_prob[np.bitwise_and(q2 > 12.5, q2 < 15)] = 0
-print(ml_tools.test_false_true_negative_positive(test_data, sig_prob, bestCut))
-print('SB quality metric',ml_tools.test_sb(test_data, sig_prob, bestCut))
+# print('Combining ML and q2 selectors')
+# q2 = test_data["q2"]
+# sig_prob[np.bitwise_and(q2 > 8, q2 < 11)] = 0
+# sig_prob[np.bitwise_and(q2 > 12.5, q2 < 15)] = 0
+# print(ml_tools.test_false_true_negative_positive(test_data, sig_prob, bestCut))
+# print('SB quality metric',ml_tools.test_sb(test_data, sig_prob, bestCut))
