@@ -20,6 +20,7 @@ xge_model = xgboost.XGBClassifier(
 
 LOAD_FROM_SAVED = True
 MODEL_FILE_NAME = '0004_peaking.model'
+MODEL_FILE_NAME = 'hyperparameters_opt_best.model'
 
 if LOAD_FROM_SAVED:
     xge_model.load_model(os.path.join('examples_save',MODEL_FILE_NAME))

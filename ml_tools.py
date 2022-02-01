@@ -115,7 +115,9 @@ def test_false_true_negative_positive(test_dataset, sig_prob, threshold) -> dict
         'true-negative': tnr,
         'false-negative': fnr,
         'signal': signal,
-        'background': background
+        'background': background,
+        'n-signal-accept': signal * tpr,
+        'n-background-accept': background * fpr,
     }
 
 
