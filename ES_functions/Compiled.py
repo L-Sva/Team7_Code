@@ -94,65 +94,44 @@ def DIRA(dataframe, threshold=0.9999999):
     return subset, not_subset
 
 def Particle_ID(dataframe_1):
+
     dataframe = dataframe_1.copy()
-    dataframe_2 = dataframe_1.copy()
-    not_candidate = set()
-    for i in range (len(dataframe['mu_plus_MC15TuneV1_ProbNNk'])):
-        
-        n1 = dataframe['mu_plus_MC15TuneV1_ProbNNk'][i]
-        n2 = dataframe['mu_plus_MC15TuneV1_ProbNNpi'][i]
-        n3 = dataframe['mu_plus_MC15TuneV1_ProbNNmu'][i]
-        n4 = dataframe['mu_plus_MC15TuneV1_ProbNNe'][i]
-        n5 = dataframe['mu_plus_MC15TuneV1_ProbNNp'][i]
-                                                         
-        maximum = max(n1,n2,n3,n4,n5)
 
-        if (maximum != n3): # make sure prob. that a particle identified as muon is a real moun is the maximum
-            not_candidate.add(i)
-            
-    for i in range (len(dataframe['mu_plus_MC15TuneV1_ProbNNk'])):
-        
-        n1 = dataframe['mu_minus_MC15TuneV1_ProbNNk'][i]
-        n2 = dataframe['mu_minus_MC15TuneV1_ProbNNpi'][i]
-        n3 = dataframe['mu_minus_MC15TuneV1_ProbNNmu'][i]
-        n4 = dataframe['mu_minus_MC15TuneV1_ProbNNe'][i]
-        n5 = dataframe['mu_minus_MC15TuneV1_ProbNNp'][i]
-                                                         
-        maximum = max(n1,n2,n3,n4,n5)
+    # Example of how one could go about vectorising this
+    n1 = dataframe['mu_plus_MC15TuneV1_ProbNNk'].to_numpy()
+    n2 = dataframe['mu_plus_MC15TuneV1_ProbNNpi'].to_numpy()
+    n3 = dataframe['mu_plus_MC15TuneV1_ProbNNmu'].to_numpy()
+    n4 = dataframe['mu_plus_MC15TuneV1_ProbNNe'].to_numpy()
+    n5 = dataframe['mu_plus_MC15TuneV1_ProbNNp'].to_numpy()
+    crit_1 = (n3 > n1) & (n3 > n2) & (n3 > n4) & (n3 > n5)
 
-        if (maximum != n3): # make sure prob. that a particle identified as muon is a real moun is the maximum
-            not_candidate.add(i)
-    
-    for i in range (len(dataframe['mu_plus_MC15TuneV1_ProbNNk'])):
-        
-        n1 = dataframe['K_MC15TuneV1_ProbNNk'][i]
-        n2 = dataframe['K_MC15TuneV1_ProbNNpi'][i]
-        n3 = dataframe['K_MC15TuneV1_ProbNNmu'][i]
-        n4 = dataframe['K_MC15TuneV1_ProbNNe'][i]
-        n5 = dataframe['K_MC15TuneV1_ProbNNp'][i]
-                                                         
-        maximum = max(n1,n2,n3,n4,n5)
+    n1 = dataframe['mu_minus_MC15TuneV1_ProbNNk'].to_numpy()
+    n2 = dataframe['mu_minus_MC15TuneV1_ProbNNpi'].to_numpy()
+    n3 = dataframe['mu_minus_MC15TuneV1_ProbNNmu'].to_numpy()
+    n4 = dataframe['mu_minus_MC15TuneV1_ProbNNe'].to_numpy()
+    n5 = dataframe['mu_minus_MC15TuneV1_ProbNNp'].to_numpy()
+    crit_2 = (n3 > n1) & (n3 > n2) & (n3 > n4) & (n3 > n5)
 
-        if (maximum != n1): # make sure prob. that a particle identified as kaon is a real kaon is the maximum
-            not_candidate.add(i)
-    
-    for i in range (len(dataframe['mu_plus_MC15TuneV1_ProbNNk'])):
-        
-        n1 = dataframe['Pi_MC15TuneV1_ProbNNk'][i]
-        n2 = dataframe['Pi_MC15TuneV1_ProbNNpi'][i]
-        n3 = dataframe['Pi_MC15TuneV1_ProbNNmu'][i]
-        n4 = dataframe['Pi_MC15TuneV1_ProbNNe'][i]
-        n5 = dataframe['Pi_MC15TuneV1_ProbNNp'][i]
-                                                         
-        maximum = max(n1,n2,n3,n4,n5)
+    n1 = dataframe['K_MC15TuneV1_ProbNNk'].to_numpy()
+    n2 = dataframe['K_MC15TuneV1_ProbNNpi'].to_numpy()
+    n3 = dataframe['K_MC15TuneV1_ProbNNmu'].to_numpy()
+    n4 = dataframe['K_MC15TuneV1_ProbNNe'].to_numpy()
+    n5 = dataframe['K_MC15TuneV1_ProbNNp'].to_numpy()
+    crit_3 = (n1 > n2) & (n1 > n3) & (n1 > n4) & (n1 > n5)
 
-        if (maximum != n2): # make sure prob. that a particle identified as pion is a real pion is the maximum
-            not_candidate.add(i)
-    
-    not_candidate = sorted(list(not_candidate))
-    subset = dataframe.drop(not_candidate)
+    n1 = dataframe['Pi_MC15TuneV1_ProbNNk'].to_numpy()
+    n2 = dataframe['Pi_MC15TuneV1_ProbNNpi'].to_numpy()
+    n3 = dataframe['Pi_MC15TuneV1_ProbNNmu'].to_numpy()
+    n4 = dataframe['Pi_MC15TuneV1_ProbNNe'].to_numpy()
+    n5 = dataframe['Pi_MC15TuneV1_ProbNNp'].to_numpy()
+    crit_4 = (n2 > n1) & (n2 > n3) & (n2 > n4) & (n2 > n5)
 
-    not_subset = dataframe_2.drop(subset.index)
+    accept = crit_1 & crit_2 & crit_3 & crit_4
+    reject = ~accept
+
+    subset = dataframe[accept]
+    not_subset = dataframe[reject]
+
     return subset, not_subset
 #%% Selection Criteria ALL
 def selection_all(dataframe, B0_vertex_prob_threshold=0.2, \
