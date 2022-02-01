@@ -30,7 +30,7 @@ def Kstar_inv_mass(dataframe):
     not_subset = dataframe.iloc[not_subset]
 
     return subset, not_subset
-def B0_vertex_chi2(dataframe, alpha):
+def B0_vertex_chi2(dataframe, alpha=0.2):
     '''
     Input: dataframe - a dataframe need to be processed
             alpha - (in range 0 to 1) threshold of the propability of obtaining 
@@ -48,7 +48,7 @@ def B0_vertex_chi2(dataframe, alpha):
     not_subset = dataframe[dataframe['B0_ENDVERTEX_CHI2'] > threshold] 
     return subset, not_subset
 
-def final_state_particle_IP(dataframe, alpha):
+def final_state_particle_IP(dataframe, alpha=0.02):
     '''
     Input: dataframe - dataframe need to be processed
     alpha - (0 to 1) probability threshold: chi2 values that give probability
@@ -73,7 +73,7 @@ def final_state_particle_IP(dataframe, alpha):
     not_subset = K[K['Pi_IPCHI2_OWNPV'] <= threshold]
     return subset, not_subset
 
-def B0_IP_chi2(dataframe,threshold):
+def B0_IP_chi2(dataframe,threshold=9.):
     accept = dataframe[dataframe['B0_IPCHI2_OWNPV'] < threshold]
     reject = dataframe[dataframe['B0_IPCHI2_OWNPV'] >= threshold]
     return accept, reject
@@ -88,7 +88,7 @@ def FD(dataframe, threshold=10.):
     not_subset = dataframe[dataframe['B0_FD_OWNPV'] <= threshold]
     return subset, not_subset
 
-def DIRA(dataframe, threshold):
+def DIRA(dataframe, threshold=0.9999999):
     subset = dataframe[dataframe['B0_DIRA_OWNPV']>threshold]
     not_subset = dataframe[dataframe['B0_DIRA_OWNPV']<=threshold]
     return subset, not_subset
