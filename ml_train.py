@@ -16,11 +16,11 @@ SAVE_FOLDER = 'optimisation_models'
 if TRAIN_COMB_BK:
     SAVE_FOLDER = 'optimisation_models_comb'
 
-def ml_train_validate_combinatorial(**hyperparms):
+def ml_train_validate_combinatorial(**hyperparams):
     train, validate, test = (
-        ml_combinatorial_extraction.load_combinatorial_train_validate_test())
+        ml_combinatorial_extraction.load_combinatorial_train_validate_test(train_samples_limit=None))
 
-    return ml_train_validate(train, validate)
+    return ml_train_validate(train, validate, **hyperparams)
 
 def ml_train_validate_peaking(**hyperparams):
     # 1. get data
@@ -66,6 +66,8 @@ def ml_train_validate(train_data, validate_data, **hyperparams, ):
 
     # 5. save model
     MODEL_FILE_NAME = 'peaking_sb_{}_'.format(bestSb)
+    if TRAIN_COMB_BK:
+        MODEL_FILE_NAME = 'comb_sb_{}_'.format(bestSb)
     for i in hyperparams:
         MODEL_FILE_NAME = MODEL_FILE_NAME + str(i) +'_'+ str(hyperparams[i]) +'_'
     MODEL_FILE_NAME = MODEL_FILE_NAME + '.model'

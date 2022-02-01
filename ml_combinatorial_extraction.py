@@ -10,9 +10,9 @@ def B0_MM_selector(dataset, B0_MM = 5400):
     ns = dataset[~accept]
     return s, ns
 
-def load_combinatorial_train_validate_test():
+def load_combinatorial_train_validate_test(train_samples_limit = None):
     signal_data = load_file(RAWFILES.SIGNAL)
-    bk_data = B0_MM_selector(load_file(RAWFILES.TOTAL_DATASET), 5400)
+    bk_data, _ = B0_MM_selector(load_file(RAWFILES.TOTAL_DATASET), 5400)
 
     sig_train, sig_validate, sig_test = ml_tools.ml_prepare_train_validate_test(signal_data)
     bks_train, bks_validate, bks_test = ml_tools.ml_prepare_train_validate_test(bk_data)
@@ -20,7 +20,7 @@ def load_combinatorial_train_validate_test():
     for df in [sig_train, sig_validate, sig_test, bks_train, bks_validate, bks_test]:
         ml_tools.ml_strip_columns(df, inplace=True, reject_column_names=('B0_MM','Kstar_MM'))
 
-    train_data = ml_tools.ml_combine_signal_bk(sig_train, bks_train)
+    train_data = ml_tools.ml_combine_signal_bk(sig_train[:train_samples_limit], bks_train[:train_samples_limit])
     validate_data = ml_tools.ml_combine_signal_bk(sig_validate, bks_validate)
     test_data = ml_tools.ml_combine_signal_bk(sig_test, bks_test)
 
