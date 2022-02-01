@@ -99,7 +99,7 @@ else:
     train_func = ml_train_validate_peaking
 
 optimizer = ml_tools.bayesian_optimisation(
-    train_func
+    train_func,
     pbounds,
     log_folder = os.path.join(SAVE_FOLDER),
     bool_load_logs = True,
