@@ -1,4 +1,5 @@
 from pyexpat import model
+from core import RAWFILES, load_file
 from histrogram_plots import generic_selector_plot
 import ml_tools
 import xgboost
@@ -73,6 +74,12 @@ xge_model.get_booster().feature_names = [x for x in train_data.drop('category', 
 
 # Used to compare behaviour to q2 selector
 generic_selector_plot(test_data, test_data[sig_prob > bestCut], test_data[sig_prob < bestCut],'q2')
+plt.show()
+
+total = load_file(RAWFILES.TOTAL_DATASET)
+total = ml_tools.ml_strip_columns(total)
+sig_prob = ml_tools.ml_get_model_sig_prob(total, xge_model)
+generic_selector_plot(total, total[sig_prob > bestCut], total[sig_prob < bestCut],'q2')
 plt.show()
 
 # Plotting the 'importance' of each feature
