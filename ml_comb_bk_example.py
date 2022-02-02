@@ -1,15 +1,22 @@
-from pyexpat import model
+
+from core import RAWFILES, load_file
 from histrogram_plots import generic_selector_plot
 import ml_tools
 import xgboost
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-import ml_load
+import ml_load, ml_combinatorial_extraction
 
 # Use module to get prepared train/test data
-train_data, test_data = ml_load.get_train_test_for_all_peaking_bks(train_samples_limit=100000)
-
+train_data, validate, test_data = (
+    ml_combinatorial_extraction.load_combinatorial_train_validate_test(
+        train_samples_limit=None, remove_columns=True)
+)
+_, _, all_col_test_data = (
+    ml_combinatorial_extraction.load_combinatorial_train_validate_test(
+        train_samples_limit=None, remove_columns=False)
+)
 # Make more logging information available
 xgboost.set_config(verbosity=2)
 
@@ -19,8 +26,6 @@ xge_model = xgboost.XGBClassifier(
 )
 
 LOAD_FROM_SAVED = True
-MODEL_FILE_NAME = '0004_peaking.model'
-MODEL_FILE_NAME = 'pk_hyperparameters_opt_best.model'
 MODEL_FILE_NAME = 'comb_hyperparameters_opt_best.model'
 
 if LOAD_FROM_SAVED:
@@ -71,8 +76,16 @@ print('SB quality metric',ml_tools.test_sb(test_data, sig_prob, bestCut))
 # Labeling the features from pandas dataframe
 xge_model.get_booster().feature_names = [x for x in train_data.drop('category', axis=1)]
 
-# Used to compare behaviour to q2 selector
-generic_selector_plot(test_data, test_data[sig_prob > bestCut], test_data[sig_prob < bestCut],'q2')
+total = load_file(RAWFILES.TOTAL_DATASET)
+total_red = ml_tools.ml_strip_columns(total, reject_column_names=('B0_MM', 'Kstar_MM'))
+
+# Values cutting
+sig_prob = ml_tools.ml_get_model_sig_prob(total_red, xge_model)
+generic_selector_plot(
+    total, 
+    total[sig_prob > bestCut], 
+    total[sig_prob < bestCut],
+    'B0_MM')
 plt.show()
 
 # Plotting the 'importance' of each feature
@@ -80,12 +93,3 @@ plt.show()
 xgboost.plot_importance(xge_model, max_num_features=20)
 plt.tight_layout()
 plt.show()
-
-# Performance using ML and q2 selector
-# Should build generalised code to do this type of operation - being built by compling functions group
-# print('Combining ML and q2 selectors')
-# q2 = test_data["q2"]
-# sig_prob[np.bitwise_and(q2 > 8, q2 < 11)] = 0
-# sig_prob[np.bitwise_and(q2 > 12.5, q2 < 15)] = 0
-# print(ml_tools.test_false_true_negative_positive(test_data, sig_prob, bestCut))
-# print('SB quality metric',ml_tools.test_sb(test_data, sig_prob, bestCut))

@@ -78,6 +78,8 @@ def ml_combine_signal_bk(signal_dataset, background_dataset):
 def ml_get_model_sig_prob(testData, model):
     if 'category' in testData:
         test_vars = testData.drop('category',axis=1)
+    else:
+        test_vars = testData
     return model.predict_proba(test_vars)[:,1]
 
 def test_false_true_negative_positive(test_dataset, sig_prob, threshold) -> dict:
