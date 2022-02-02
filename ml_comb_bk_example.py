@@ -21,9 +21,7 @@ _, _, all_col_test_data = (
 xgboost.set_config(verbosity=2)
 
 # Initialise model, some model parameters are passed here
-xge_model = xgboost.XGBClassifier(
-    max_depth=10,
-)
+xge_model = xgboost.XGBClassifier()
 
 LOAD_FROM_SAVED = True
 MODEL_FILE_NAME = 'comb_hyperparameters_opt_best.model'
@@ -72,6 +70,7 @@ bestCut = threshold_list[bestIx]
 print("ML selector only")
 print(ml_tools.test_false_true_negative_positive(test_data, sig_prob, bestCut))
 print('SB quality metric',ml_tools.test_sb(test_data, sig_prob, bestCut))
+print('Best cut:', bestCut)
 
 # Labeling the features from pandas dataframe
 xge_model.get_booster().feature_names = [x for x in train_data.drop('category', axis=1)]

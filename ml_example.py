@@ -21,7 +21,6 @@ xge_model = xgboost.XGBClassifier(
 LOAD_FROM_SAVED = True
 MODEL_FILE_NAME = '0004_peaking.model'
 MODEL_FILE_NAME = 'pk_hyperparameters_opt_best.model'
-MODEL_FILE_NAME = 'comb_hyperparameters_opt_best.model'
 
 if LOAD_FROM_SAVED:
     xge_model.load_model(os.path.join('examples_save',MODEL_FILE_NAME))
@@ -67,6 +66,7 @@ bestCut = threshold_list[bestIx]
 print("ML selector only")
 print(ml_tools.test_false_true_negative_positive(test_data, sig_prob, bestCut))
 print('SB quality metric',ml_tools.test_sb(test_data, sig_prob, bestCut))
+print('Best cut:',bestCut)
 
 # Labeling the features from pandas dataframe
 xge_model.get_booster().feature_names = [x for x in train_data.drop('category', axis=1)]
