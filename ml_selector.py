@@ -1,12 +1,15 @@
 """ Implementation of the ML background removing models as selectors
 """
 
+from math import comb
 import xgboost
 import os
 import matplotlib.pyplot as plt
+import ES_functions
 from histrogram_plots import generic_selector_plot, plot_hist_quantity
 from ml_tools import ml_get_model_sig_prob, ml_strip_columns
 from core import RAWFILES, load_file, combine_n_selectors
+from ES_functions.Compiled import q2_resonances
 
 IMAGE_OUTPUT_DIR = 'data_ml_selectors_histograms'
 
@@ -41,9 +44,11 @@ def remove_peaking_background(data):
 remove_all_bk = combine_n_selectors(remove_combinatorial_background, remove_peaking_background)
 
 if __name__ == "__main__":
+    remove = combine_n_selectors(remove_combinatorial_background, remove_peaking_background, q2_resonances)
+
     total = load_file(RAWFILES.TOTAL_DATASET)
     signal = load_file(RAWFILES.SIGNAL)
-    s, ns = remove_all_bk(total)
+    s, ns = remove(total)
     #s, ns = remove_peaking_background(total)
 
     for column in total:
