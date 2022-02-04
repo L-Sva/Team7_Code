@@ -34,6 +34,9 @@ def generic_selector_plot(orginal,subset, not_subset, column, bins = 100, show =
     if show:
         plt.show()
 
+def validPlotColumns(dataset):
+    return [column for column in dataset if dataset[column].dtype != 'object']
+
 if __name__ == '__main__':
     total_dataset = load_file('total_dataset.pkl')
     jpsi = load_file('jpsi.pkl')
