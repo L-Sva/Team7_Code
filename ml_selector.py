@@ -52,7 +52,6 @@ if __name__ == "__main__":
     #s, ns = remove_peaking_background(total)
 
     for column in total:
-        print(column)
         if total[column].dtype != 'object':
             bins, h = plot_hist_quantity(total, column, label='Total dataset', bins=150)
             plot_hist_quantity(s, column, label='ML - Signal', bins = bins)

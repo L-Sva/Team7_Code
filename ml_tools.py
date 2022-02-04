@@ -1,10 +1,11 @@
 from typing import Tuple
 from core import RAWFILES, load_file
 import pandas as pd
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split as _train_test_split
 import numpy as np
 from sklearn import metrics
 import matplotlib.pyplot as plt
+import warnings
 
 from bayes_opt import BayesianOptimization
 from bayes_opt import UtilityFunction
@@ -35,7 +36,9 @@ def ml_strip_columns(dataframe,
             not (name in BASE_NAMES or name in accepted_column_names or name == 'category')
             or name in reject_column_names or name in columns_names_to_drop
         ):
-            dataframe.drop(name, inplace=True, axis=1)
+            with warnings.catch_warnings():
+                warnings.simplefilter(action='ignore')
+                dataframe.drop(name, inplace=True, axis=1)
 
     return dataframe
 
@@ -52,7 +55,7 @@ def ml_train_model(training_data, model, **kwargs):
 def ml_prepare_train_test(dataset, randomiser_seed = 1) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """Takes a dataset and splits it into test and train datasets"""
     # Marek
-    train, test = train_test_split(dataset, test_size = 0.2, random_state=randomiser_seed)
+    train, test = _train_test_split(dataset, test_size = 0.2, random_state=randomiser_seed)
     return train, test
 
 def ml_prepare_train_validate_test(dataset, randomiser_seed_a = 1, randomiser_seed_b = 2) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
