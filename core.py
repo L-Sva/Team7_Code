@@ -53,4 +53,10 @@ def combine_n_selectors(*selectors):
         return yes, pd.concat(no)
     return combined_selectors
 
+def ensure_dir(dirpath):
+    dirpath = os.path.abspath(dirpath)
+    if not os.path.exists(dirpath):
+        ensure_dir(os.path.dirname(dirpath))
+        os.mkdir(dirpath)
+
 # selector - output as additional column instead of pair of subsets
