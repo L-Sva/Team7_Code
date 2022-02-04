@@ -73,13 +73,15 @@ print('Best cut:',bestCut)
 xge_model.get_booster().feature_names = [x for x in train_data.drop('category', axis=1)]
 
 # Used to compare behaviour to q2 selector
-generic_selector_plot(test_data, test_data[sig_prob > bestCut], test_data[sig_prob < bestCut],'q2')
+generic_selector_plot(test_data, test_data[sig_prob > bestCut], test_data[sig_prob < bestCut],'q2', show=False)
+plt.title('ML Peaking BK removal on simulated test data')
 plt.show()
 
 total = load_file(RAWFILES.TOTAL_DATASET)
 total = ml_tools.ml_strip_columns(total)
 sig_prob = ml_tools.ml_get_model_sig_prob(total, xge_model)
-generic_selector_plot(total, total[sig_prob > bestCut], total[sig_prob < bestCut],'q2')
+generic_selector_plot(total, total[sig_prob > bestCut], total[sig_prob < bestCut],'q2', show=False)
+plt.title('ML Peaking BK removal on total_dataset')
 plt.show()
 
 # Plotting the 'importance' of each feature
