@@ -21,8 +21,12 @@ def load_combinatorial_train_validate_test(train_samples_limit = None, remove_co
     if remove_columns:
             reject_column_names = ('B0_MM','Kstar_MM')
 
-    for df in [sig_train, sig_validate, sig_test, bks_train, bks_validate, bks_test]:
-        ml_tools.ml_strip_columns(df, inplace=True, reject_column_names=reject_column_names)
+    dfs = [sig_train, sig_validate, sig_test, bks_train, bks_validate, bks_test]
+
+    for i in range(len(dfs)):
+        dfs[i] = ml_tools.ml_strip_columns(dfs[i], reject_column_names=reject_column_names)
+
+    sig_train, sig_validate, sig_test, bks_train, bks_validate, bks_test = dfs
 
     train_data = ml_tools.ml_combine_signal_bk(sig_train[:train_samples_limit], bks_train[:train_samples_limit])
     validate_data = ml_tools.ml_combine_signal_bk(sig_validate, bks_validate)

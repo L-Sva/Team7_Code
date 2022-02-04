@@ -7,9 +7,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import ml_load
+import pandas as pd
 
 # Use module to get prepared train/test data
-train_data, test_data = ml_load.get_train_test_for_all_peaking_bks(train_samples_limit=100000)
+train_data, test_data = ml_load.get_train_test_for_all_peaking_bks(train_samples_limit=10000)
 
 # Make more logging information available
 xgboost.set_config(verbosity=2)
@@ -19,9 +20,9 @@ xge_model = xgboost.XGBClassifier(
     max_depth=10,
 )
 
-LOAD_FROM_SAVED = True
-MODEL_FILE_NAME = '0004_peaking.model'
-MODEL_FILE_NAME = 'pk_hyperparameters_opt_best.model'
+LOAD_FROM_SAVED = False
+MODEL_FILE_NAME = '0005_peaking.model'
+# MODEL_FILE_NAME = 'pk_hyperparameters_opt_best.model'
 
 if LOAD_FROM_SAVED:
     xge_model.load_model(os.path.join('examples_save',MODEL_FILE_NAME))
@@ -62,6 +63,7 @@ plt.close()
 # TODO: Make function in ml_tools
 bestIx = np.nanargmax(np.array(sb_list))
 bestCut = threshold_list[bestIx]
+bestCut = 0.9
 
 # Printout
 print("ML selector only")

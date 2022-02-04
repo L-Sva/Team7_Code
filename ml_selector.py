@@ -17,7 +17,7 @@ COMB_BK_MODEL_FILE_NAME = 'comb_hyperparameters_opt_best.model'
 COMB_BK_THRESH = 0.48
 
 PK_BK_MODEL_FILE_NAME = 'pk_hyperparameters_opt_best.model'
-PK_BK_THRESH = 0.9
+PK_BK_THRESH = 0.95
 
 comb_bk_model = xgboost.XGBClassifier()
 comb_bk_model.load_model(os.path.join('examples_save',COMB_BK_MODEL_FILE_NAME))

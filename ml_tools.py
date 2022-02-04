@@ -5,7 +5,6 @@ from sklearn.model_selection import train_test_split as _train_test_split
 import numpy as np
 from sklearn import metrics
 import matplotlib.pyplot as plt
-import warnings
 
 from bayes_opt import BayesianOptimization
 from bayes_opt import UtilityFunction
@@ -19,13 +18,11 @@ BASE_NAMES = [name for name in load_file(RAWFILES.SIGNAL)]
 
 def ml_strip_columns(dataframe,
     accepted_column_names: Tuple[str, ...]=(),
-    reject_column_names: Tuple[str, ...]=(),
-    inplace=False
+    reject_column_names: Tuple[str, ...]=()
 ) -> pd.DataFrame:
     """Strips columns which contain information we don't want to pass to the ML model"""
 
-    if not inplace:
-        dataframe = dataframe.copy()
+    dataframe = dataframe.copy()
 
     # Drops 'year' and 'B0_ID' columns
     columns_names_to_drop = ('year','B0_ID')
@@ -36,9 +33,7 @@ def ml_strip_columns(dataframe,
             not (name in BASE_NAMES or name in accepted_column_names or name == 'category')
             or name in reject_column_names or name in columns_names_to_drop
         ):
-            with warnings.catch_warnings():
-                warnings.simplefilter(action='ignore')
-                dataframe.drop(name, inplace=True, axis=1)
+            dataframe.drop(name, inplace=True, axis=1)
 
     return dataframe
 
@@ -49,7 +44,7 @@ def ml_train_model(training_data, model, **kwargs):
     """
 
     train_vars = training_data.drop('category',axis=1)
-    model.fit(train_vars, training_data['category'].to_numpy(), **kwargs)
+    model.fit(train_vars.values, training_data['category'].to_numpy(), **kwargs)
     return model
 
 def ml_prepare_train_test(dataset, randomiser_seed = 1) -> Tuple[pd.DataFrame, pd.DataFrame]:
@@ -83,7 +78,7 @@ def ml_get_model_sig_prob(testData, model):
         test_vars = testData.drop('category',axis=1)
     else:
         test_vars = testData
-    return model.predict_proba(test_vars)[:,1]
+    return model.predict_proba(test_vars.values)[:,1]
 
 def test_false_true_negative_positive(test_dataset, sig_prob, threshold) -> dict:
     # Jiayang

@@ -22,26 +22,28 @@ def test_candidate_true_false_positive_negative(test_data, selection_method=q2_r
     both_dicts = {**dict1, **dict2}#merge dictionaries
     return both_dicts
     
+
 #%%
-#Load signal and non-signal, then loop through selection cuts including "selection_all" which is all cuts
-signal = load_file(RAWFILES.SIGNAL)
-#signal=pd.read_pickle('data/signal.pkl')
+if __name__ == '__main__':
+    #Load signal and non-signal, then loop through selection cuts including "selection_all" which is all cuts
+    signal = load_file(RAWFILES.SIGNAL)
+    #signal=pd.read_pickle('data/signal.pkl')
 
-non_signal = []
-for file in RAWFILES.peaking_bks:
-    data = load_file(file)
-    #data = pd.read_pickle(f'data/{file}')
-    non_signal.append(data)
-non_signal = pd.concat(non_signal)
-test_data = ml_tools.ml_combine_signal_bk(signal, non_signal)
+    non_signal = []
+    for file in RAWFILES.peaking_bks:
+        data = load_file(file)
+        #data = pd.read_pickle(f'data/{file}')
+        non_signal.append(data)
+    non_signal = pd.concat(non_signal)
+    test_data = ml_tools.ml_combine_signal_bk(signal, non_signal)
 
-train, test = ml_load.get_train_test_for_all_peaking_bks()
+    train, test = ml_load.get_train_test_for_all_peaking_bks()
 
-funclist=[q2_resonances, Kstar_inv_mass, B0_vertex_chi2, final_state_particle_IP, B0_IP_chi2, FD, DIRA,] #Particle_ID, selection_all]
-output={}
-for func in funclist:
-    print('Testing selector', func.__name__)
-    output[func.__name__] = (test_candidate_true_false_positive_negative(test,func))
-for key in output:
-    print(f'{key} | tpr: {output[key]["true-positive"]:.4g}, fpr: {output[key]["false-positive"]:.4g}, sb: {output[key]["SB Metric"]:4g}')
-#30/01/2022: Error with Particle_ID func (and therefore selection_all func) - possibly due to ml_combine_signal_bk func used in line 9?
+    funclist=[q2_resonances, Kstar_inv_mass, B0_vertex_chi2, final_state_particle_IP, B0_IP_chi2, FD, DIRA,] #Particle_ID, selection_all]
+    output={}
+    for func in funclist:
+        print('Testing selector', func.__name__)
+        output[func.__name__] = (test_candidate_true_false_positive_negative(test,func))
+    for key in output:
+        print(f'{key} | tpr: {output[key]["true-positive"]:.4g}, fpr: {output[key]["false-positive"]:.4g}, sb: {output[key]["SB Metric"]:4g}')
+    #30/01/2022: Error with Particle_ID func (and therefore selection_all func) - possibly due to ml_combine_signal_bk func used in line 9?
