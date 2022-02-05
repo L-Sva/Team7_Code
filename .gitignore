@@ -4,3 +4,4 @@ _localOnly*
 optimisation_models/*.model
 optimisation_models_comb/*.model
 *.7z
+data_ml_selectors_histograms/
