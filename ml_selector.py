@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import ES_functions
 from histrogram_plots import generic_selector_plot, plot_hist_quantity
 from ml_tools import ml_get_model_sig_prob, ml_strip_columns
-from core import RAWFILES, load_file, combine_n_selectors
+from core import RAWFILES, ensure_dir, load_file, combine_n_selectors
 from ES_functions.Compiled import q2_resonances
 
 IMAGE_OUTPUT_DIR = 'data_ml_selectors_histograms'
@@ -17,7 +17,7 @@ COMB_BK_MODEL_FILE_NAME = 'comb_hyperparameters_opt_best.model'
 COMB_BK_THRESH = 0.48
 
 PK_BK_MODEL_FILE_NAME = 'pk_hyperparameters_opt_best.model'
-PK_BK_THRESH = 0.95
+PK_BK_THRESH = 0.9984974958263773
 
 comb_bk_model = xgboost.XGBClassifier()
 comb_bk_model.load_model(os.path.join('examples_save',COMB_BK_MODEL_FILE_NAME))
@@ -48,8 +48,10 @@ if __name__ == "__main__":
 
     total = load_file(RAWFILES.TOTAL_DATASET)
     signal = load_file(RAWFILES.SIGNAL)
-    s, ns = remove(total)
-    #s, ns = remove_peaking_background(total)
+    #s, ns = remove_all_bk(total)
+    s, ns = remove_peaking_background(total)
+
+    ensure_dir(IMAGE_OUTPUT_DIR)
 
     for column in total:
         if total[column].dtype != 'object':
