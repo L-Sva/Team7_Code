@@ -1,7 +1,7 @@
 from typing import Tuple
 from core import RAWFILES, load_file
 import pandas as pd
-from sklearn.model_selection import train_test_split as _train_test_split
+#from sklearn.model_selection import train_test_split as _train_test_split
 import numpy as np
 from sklearn import metrics
 import matplotlib.pyplot as plt
@@ -44,8 +44,14 @@ def ml_train_model(training_data, model, **kwargs):
     """
 
     train_vars = training_data.drop('category',axis=1)
-    model.fit(train_vars.values, training_data['category'].to_numpy(), **kwargs)
+    model.fit(train_vars.values, training_data['category'].to_numpy().astype('int'), **kwargs)
     return model
+
+def _train_test_split(dataset, test_size, random_state = 1):
+    dataset_reorder = dataset.sample(frac=1, axis=0, random_state = random_state)
+    dataset_reorder = dataset_reorder.reset_index(drop=True)
+    m = int ((1-test_size) * len(dataset_reorder))
+    return dataset_reorder[0:m], dataset_reorder[m:]
 
 def ml_prepare_train_test(dataset, randomiser_seed = 1) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """Takes a dataset and splits it into test and train datasets"""
@@ -69,9 +75,14 @@ def ml_combine_signal_bk(signal_dataset, background_dataset):
     signal_dataset.loc[:,'category'] = 1
     background_dataset.loc[:,'category'] = 0
 
-    # combine
-    dataset = pd.concat((signal_dataset, background_dataset))
-    return dataset
+    dataset = pd.DataFrame(
+        np.concatenate((background_dataset.values, signal_dataset.values), axis = 0),
+        columns = [name for name in signal_dataset]
+    )
+    dataset = dataset.reset_index(drop=True)
+    dataset_reorder = dataset.sample(frac=1, axis=0)
+    dataset_reorder = dataset_reorder.reset_index(drop=True)
+    return dataset_reorder
 
 def ml_get_model_sig_prob(testData, model):
     if 'category' in testData:
@@ -96,12 +107,7 @@ def test_false_true_negative_positive(test_dataset, sig_prob, threshold) -> dict
     false_negative = np.count_nonzero(np.logical_and(x_mask_1, prb_mask_neg))
     false_positive = np.count_nonzero(np.logical_and(x_mask_0, prb_mask_pos))
     true_negative =  np.count_nonzero(np.logical_and(x_mask_0, prb_mask_neg))
-
-    # sanity check
-    # total = true_positive + false_negtive + false_positive + true_negative
-    # print('total counted:', total, (signal+background))
-    # print('total candidates:', len(test_dataset['catagory']))
-
+    
     # rates
     tpr = true_positive / signal
     fpr = false_positive / background
