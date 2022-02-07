@@ -91,7 +91,10 @@ def roc_curve(model, test_data):
     rate, fpr). Each point on this curve corresponds to a cut value threshold.
     '''
 
-    sp = ml_get_model_sig_prob(test_data, model)
+    def predict_prob(data, model):
+        return model.predict_proba(data.drop('category',axis=1).values)[:,1]
+
+    sp = predict_prob(test_data, model)
     fpr, tpr, cut_values = metrics.roc_curve(test_data['category'], sp)
     area = metrics.auc(fpr, tpr)
 
