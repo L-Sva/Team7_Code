@@ -25,7 +25,7 @@ def ml_strip_columns(dataframe,
     dataframe = dataframe.copy()
 
     # Drops 'year' and 'B0_ID' columns
-    columns_names_to_drop = ('year','B0_ID')
+    columns_names_to_drop = ('year','B0_ID','polarity')
 
     # Drops any columns added during processing not specified to keep
     for name in dataframe:
@@ -118,13 +118,13 @@ def plot_roc_curve(fpr, tpr, area):
     plt.gca().set_aspect('equal', adjustable='box')
     #plt.show()
 
-def test_sb(test_dataset, sig_prob, threshold):
+def test_sb(test_dataset, sig_prob, threshold, bk_penalty = 1):
     # Jiayang
 
     output = test_false_true_negative_positive(test_dataset, sig_prob, threshold)
 
     S = output['signal'] * output['true-positive']
-    B = output['background'] * output['false-positive']
+    B = output['background'] * output['false-positive'] * bk_penalty
     if S+B == 0:
         return 0
     metric = S/np.sqrt(S+B)

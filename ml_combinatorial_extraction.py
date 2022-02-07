@@ -3,6 +3,7 @@ from histrogram_plots import generic_selector_plot, plot_hist_quantity
 import matplotlib.pyplot as plt
 from os import path
 import ml_tools
+from ml_recreate import load_train_validate_test, split_train_validate_test, combine_signal_background
 
 def B0_MM_selector(dataset, B0_MM = 5400):
     accept = dataset['B0_MM'] > B0_MM
@@ -11,27 +12,23 @@ def B0_MM_selector(dataset, B0_MM = 5400):
     return s, ns
 
 def load_combinatorial_train_validate_test(train_samples_limit = None, remove_columns = True):
-    signal_data = load_file(RAWFILES.SIGNAL)
+    signal_data = load_train_validate_test(RAWFILES.SIGNAL)
     bk_data, _ = B0_MM_selector(load_file(RAWFILES.TOTAL_DATASET), 5400)
-
-    sig_train, sig_validate, sig_test = ml_tools.ml_prepare_train_validate_test(signal_data)
-    bks_train, bks_validate, bks_test = ml_tools.ml_prepare_train_validate_test(bk_data)
+    bk_data = split_train_validate_test(bk_data)
 
     reject_column_names = ()
     if remove_columns:
             reject_column_names = ('B0_MM','Kstar_MM')
 
-    dfs = [sig_train, sig_validate, sig_test, bks_train, bks_validate, bks_test]
+    def strip_columns(data):
+        for i in range(len(data)):
+            data[i] = ml_tools.ml_strip_columns(data[i], reject_column_names=reject_column_names)
+        return data
+    
+    signal_data = strip_columns(signal_data)
+    bk_data = strip_columns(bk_data)
 
-    for i in range(len(dfs)):
-        dfs[i] = ml_tools.ml_strip_columns(dfs[i], reject_column_names=reject_column_names)
-
-    sig_train, sig_validate, sig_test, bks_train, bks_validate, bks_test = dfs
-
-    train_data = ml_tools.ml_combine_signal_bk(sig_train[:train_samples_limit], bks_train[:train_samples_limit])
-    validate_data = ml_tools.ml_combine_signal_bk(sig_validate, bks_validate)
-    test_data = ml_tools.ml_combine_signal_bk(sig_test, bks_test)
-
+    train_data, validate_data, test_data = combine_signal_background(signal_data, bk_data)
     return train_data, validate_data, test_data
 
 

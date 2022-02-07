@@ -14,7 +14,10 @@ import ml_tools
 
 def load_train_validate_test(file, test_size=0.2, validate_size=0.16):
     data = load_file(file)
-    data = data.drop('year',axis=1)
+    data = ml_tools.ml_strip_columns(data)
+    return split_train_validate_test(data, test_size, validate_size)
+
+def split_train_validate_test(data, test_size=0.2, validate_size=0.16):
     if test_size == 0:
         return data
     else:
@@ -98,16 +101,16 @@ def make_selector(model, thresh):
         return select(data, model, thresh)
     return generated_selector
 
-def plot_sb(data, sig_prob):
+def plot_sb(data, sig_prob, bk_penalty=1):
     thresh_list = np.linspace(0.1, 1, 600)
     sb = [
-        ml_tools.test_sb(data,sig_prob, t) for t in thresh_list
+        ml_tools.test_sb(data,sig_prob, t, bk_penalty) for t in thresh_list
     ]
     plt.plot(thresh_list,sb)
 
-def optimize_threshold(validate_dataset, sig_prob):
+def optimize_threshold(validate_dataset, sig_prob, bk_penalty=1):
     def target_func(x):
-        return 400-ml_tools.test_sb(validate_dataset, sig_prob, x)
+        return 400-ml_tools.test_sb(validate_dataset, sig_prob, x, bk_penalty)
 
     optimize_result = scipy.optimize.dual_annealing(target_func,bounds=((0,1),),x0=[0.95])
     thresh = optimize_result.x[0]
@@ -116,15 +119,27 @@ def optimize_threshold(validate_dataset, sig_prob):
 def predict_prob(data, model):
     return model.predict_proba(data.drop('category',axis=1).values)[:,1]
 
+def plot_features(xge_model, train_data):
+    xge_model.get_booster().feature_names = [x for x in train_data.drop('category', axis=1)]
+    xgboost.plot_importance(xge_model, max_num_features=20)
+    plt.tight_layout()
+
+def plot_roc_curve(xge_model, test_data):
+    roc_curve_res = ml_tools.roc_curve(xge_model, test_data)
+    ml_tools.plot_roc_curve(roc_curve_res['fpr'],roc_curve_res['tpr'],roc_curve_res['area'])
+
 if __name__ == '__main__':
 
     signal = load_train_validate_test(RAWFILES.SIGNAL, validate_size=0)
-    background = load_train_validate_test(RAWFILES.JPSI, validate_size=0)
-    background = concat_datasets([load_train_validate_test(file) for file in RAWFILES.peaking_bks])
+    #background = load_train_validate_test(RAWFILES.JPSI, validate_size=0)
+    background = concat_datasets([load_train_validate_test(file, validate_size=0) for file in RAWFILES.peaking_bks])
+    background = load_train_validate_test(RAWFILES.PSI2S, validate_size=0)
     train, test = combine_signal_background(signal, background)
 
 
-    MODEL_PATH = os.path.join('examples_save','0008_peak.model')
+    MODEL_PATH = os.path.join('examples_save','0006_peak.model')
+    MODEL_PATH = os.path.join('examples_save','pk_hyperparameters_opt_best.model')
+    MODEL_PATH = os.path.join('examples_save','0009_psi2S_quick.model')
 
     if not os.path.exists(MODEL_PATH):
         model = fit_new_model(train[:30000])
@@ -133,37 +148,43 @@ if __name__ == '__main__':
         model = load_model_file(MODEL_PATH)
 
     sig_prob = predict_prob(test, model)
-    thresh = optimize_threshold(test, sig_prob)
+    thresh = optimize_threshold(test, sig_prob, bk_penalty=10)
 
+    print('Chosen threshold:', thresh)
     print(ml_tools.test_false_true_negative_positive(test, sig_prob, thresh))
+
+    plot_features(model, train)
+    plt.show()
+
     plot_sb(test, sig_prob)
-    plt.close()
+    plt.show()
 
     selector = make_selector(model, thresh)
-    s, ns = selector(background[0])
-    print(len(s), len(ns))
 
     IMAGE_OUTPUT_DIR = 'data_ml_selectors_histograms'
+    OUTPUT_PLOTS = False
 
     ensure_dir(IMAGE_OUTPUT_DIR)
 
-    total = load_train_validate_test(RAWFILES.TOTAL_DATASET, test_size = 0, validate_size= 0)
-    signal_all = load_train_validate_test(RAWFILES.SIGNAL, test_size = 0, validate_size= 0)
-    s, ns = selector(total)
-    for column in total:
-        bins, h = plot_hist_quantity(total, column, label='Total dataset', bins=150)
-        plot_hist_quantity(s, column, label='ML - Signal', bins = bins)
-        plot_hist_quantity(ns, column, label='ML - Background', bins=bins)
-        plot_hist_quantity(signal_all, column, label='Simulated signal', bins=bins)
-        plt.legend()
+    if OUTPUT_PLOTS:
+        total = load_train_validate_test(RAWFILES.TOTAL_DATASET, test_size = 0, validate_size= 0)
+        signal_all = load_train_validate_test(RAWFILES.SIGNAL, test_size = 0, validate_size= 0)
+        s, ns = selector(total)
+        for column in total:
+            bins, h = plot_hist_quantity(total, column, label='Total dataset', bins=150)
+            plot_hist_quantity(s, column, label='ML - Signal', bins = bins)
+            plot_hist_quantity(ns, column, label='ML - Background', bins=bins)
+            plot_hist_quantity(signal_all, column, label='Simulated signal', bins=bins)
+            plt.legend()
 
-        plt.savefig(
-            os.path.join(IMAGE_OUTPUT_DIR,f'{column}.png')
-        )
-        plt.close()
+            plt.savefig(
+                os.path.join(IMAGE_OUTPUT_DIR,f'{column}.png')
+            )
+            plt.close()
 
     DIR ='ml_hist_individual_bks'
     OUTPUT_PLOTS = False
+
     ensure_dir(DIR)
 
     for file in RAWFILES.peaking_bks:
@@ -174,9 +195,10 @@ if __name__ == '__main__':
         print(f'{file} | accepted: {len(s)} ({len(s)/num}), rejected {len(ns)} ({len(ns)/num})')
         if OUTPUT_PLOTS:
             cols = [col for col in test]
+            cols = ['q2']
             N = len(cols)
             i = 1
-            for col in test:
+            for col in cols:
                 generic_selector_plot(test, s, ns, col, 150, False)
                 plt.title(f'ML peaking bk removal on {file[:-4]}')
                 plt.savefig(os.path.join(IMG_DIR, f'{file[:-4]}_{col}.png'))
