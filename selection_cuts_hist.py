@@ -35,16 +35,19 @@ for non_signal in peaking_bk:
     mod_peaking_bk.append(test_data)
 
 funclist=[q2_resonances, Kstar_inv_mass, B0_vertex_chi2, final_state_particle_IP, B0_IP_chi2, FD, DIRA, Particle_ID, selection_all]
+funclistnames=["q2_resonances", "Kstar_inv_mass", "B0_vertex_chi2", "final_state_particle_IP", "B0_IP_chi2", "FD", "DIRA", "Particle_ID", "selection_all"]
+peaking_bknames = ["JPSI", "JPSI_MU_K_SWAP", "JPSI_MU_PI_SWAP", "K_PI_SWAP","PHIMUMU", "PKMUMU_PI_TO_P", "PKMUMU_PI_TO_K_K_TO_P", "PSI2S","COMBINED"]
 
 #%%
+plt.close()
 column = 'q2'
+#column = 'B0_MM'
 
-for selection_method in funclist:
+for selection_method in range(len(funclist)):
     for test_data in range(len(mod_peaking_bk)):
-        s, ns = selection_method(mod_peaking_bk[test_data])
-        val = test_candidate_true_false_positive_negative(mod_peaking_bk[test_data], selection_method = selection_method)
+        s, ns = funclist[selection_method](mod_peaking_bk[test_data])
+        val = test_candidate_true_false_positive_negative(mod_peaking_bk[test_data], selection_method = funclist[selection_method])
         print(val)
         plt.figure(test_data)
         generic_selector_plot(orginal = mod_peaking_bk[test_data],subset = s, not_subset = ns, column = column, bins = 100, show = True)
-        #plt.savefig()
-
+        plt.savefig(f"Selection_cuts_histograms_q2/{column}_{funclistnames[selection_method]}_{peaking_bknames[test_data]}.png")
