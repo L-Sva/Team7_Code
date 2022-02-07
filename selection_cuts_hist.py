@@ -1,6 +1,4 @@
 from core import load_file, RAWFILES
-from ml_tools import test_false_true_negative_positive, test_sb
-import ml_tools
 import pandas as pd
 from ES_functions.Compiled import q2_resonances, Kstar_inv_mass, B0_vertex_chi2, final_state_particle_IP, B0_IP_chi2, FD, DIRA, Particle_ID, selection_all
 import numpy as np
@@ -11,20 +9,15 @@ import matplotlib.pyplot as plt
 def ml_combine_signal_bk(signal_dataset, background_dataset):
     """Combines signal and background dataset, adding category labels
     """
-    # Not Marek
+    # Marek
     signal_dataset = signal_dataset.copy()
     background_dataset = background_dataset.copy()
     signal_dataset.loc[:,'category'] = 1
     background_dataset.loc[:,'category'] = 0
 
-    dataset = pd.DataFrame(
-        np.concatenate((background_dataset.values, signal_dataset.values), axis = 0),
-        columns = [name for name in signal_dataset]
-    )
-    dataset = dataset.reset_index(drop=True)
-    dataset_reorder = dataset.sample(frac=1, axis=0)
-    dataset_reorder = dataset_reorder.reset_index(drop=True)
-    return dataset_reorder
+    # combine
+    dataset = pd.concat((signal_dataset, background_dataset))
+    return dataset
 #%%
 peaking_bk=[]
 for file in RAWFILES.peaking_bks:
@@ -44,12 +37,14 @@ for non_signal in peaking_bk:
 funclist=[q2_resonances, Kstar_inv_mass, B0_vertex_chi2, final_state_particle_IP, B0_IP_chi2, FD, DIRA, Particle_ID, selection_all]
 
 #%%
+column = 'q2'
+
 for selection_method in funclist:
     for test_data in range(len(mod_peaking_bk)):
         s, ns = selection_method(mod_peaking_bk[test_data])
         val = test_candidate_true_false_positive_negative(mod_peaking_bk[test_data], selection_method = selection_method)
         print(val)
-        # plt.figure(test_data)
-        # generic_selector_plot(orginal = test_data,subset = s, not_subset = ns, column, bins = 100, show = True)
-
+        plt.figure(test_data)
+        generic_selector_plot(orginal = mod_peaking_bk[test_data],subset = s, not_subset = ns, column = column, bins = 100, show = True)
+        #plt.savefig()
 
