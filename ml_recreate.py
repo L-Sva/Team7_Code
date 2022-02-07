@@ -133,13 +133,14 @@ if __name__ == '__main__':
     signal = load_train_validate_test(RAWFILES.SIGNAL, validate_size=0)
     #background = load_train_validate_test(RAWFILES.JPSI, validate_size=0)
     background = concat_datasets([load_train_validate_test(file, validate_size=0) for file in RAWFILES.peaking_bks])
-    background = load_train_validate_test(RAWFILES.PSI2S, validate_size=0)
+    background = load_train_validate_test(RAWFILES.PHIMUMU, validate_size=0)
     train, test = combine_signal_background(signal, background)
 
+    ML_SAVE_DIR = 'ml_models'
 
-    MODEL_PATH = os.path.join('examples_save','0006_peak.model')
-    MODEL_PATH = os.path.join('examples_save','pk_hyperparameters_opt_best.model')
-    MODEL_PATH = os.path.join('examples_save','0009_psi2S_quick.model')
+    MODEL_PATH = os.path.join(ML_SAVE_DIR,'pk_hyperparameters_opt_best.model')
+    MODEL_PATH = os.path.join(ML_SAVE_DIR,'0009_psi2S_quick.model')
+    MODEL_PATH = os.path.join(ML_SAVE_DIR,'0010_phimumu_quick.model')
 
     if not os.path.exists(MODEL_PATH):
         model = fit_new_model(train[:30000])
@@ -161,7 +162,7 @@ if __name__ == '__main__':
 
     selector = make_selector(model, thresh)
 
-    IMAGE_OUTPUT_DIR = 'data_ml_selectors_histograms'
+    IMAGE_OUTPUT_DIR = '_ml_histograms_on_total'
     OUTPUT_PLOTS = False
 
     ensure_dir(IMAGE_OUTPUT_DIR)
@@ -182,7 +183,7 @@ if __name__ == '__main__':
             )
             plt.close()
 
-    DIR ='ml_hist_individual_bks'
+    DIR ='_ml_hist_individual_bks'
     OUTPUT_PLOTS = False
 
     ensure_dir(DIR)
