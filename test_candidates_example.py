@@ -1,12 +1,57 @@
 from core import load_file, RAWFILES
-from ml_tools import test_false_true_negative_positive, test_sb
-import ml_tools
 import pandas as pd
 from ES_functions.Compiled import q2_resonances, Kstar_inv_mass, B0_vertex_chi2, final_state_particle_IP, B0_IP_chi2, FD, DIRA, Particle_ID, selection_all
 # import ml_load
 import numpy as np
 
 #%%
+def test_false_true_negative_positive(test_dataset, sig_prob, threshold) -> dict:
+    # Jiayang
+
+    x = test_dataset['category'].to_numpy()
+
+    x_mask_0 = x == 0
+    x_mask_1 = x == 1
+    prb_mask_pos = sig_prob >= threshold
+    prb_mask_neg = sig_prob < threshold
+
+    signal = np.count_nonzero(x_mask_1)
+    background = np.count_nonzero(x_mask_0)
+    true_positive =  np.count_nonzero(np.logical_and(x_mask_1, prb_mask_pos))
+    false_negative = np.count_nonzero(np.logical_and(x_mask_1, prb_mask_neg))
+    false_positive = np.count_nonzero(np.logical_and(x_mask_0, prb_mask_pos))
+    true_negative =  np.count_nonzero(np.logical_and(x_mask_0, prb_mask_neg))
+    
+    # rates
+    tpr = true_positive / signal
+    fpr = false_positive / background
+
+    fnr = false_negative / signal
+    tnr = true_negative / background
+
+    return {
+        'true-positive': tpr,
+        'false-positive': fpr,
+        'true-negative': tnr,
+        'false-negative': fnr,
+        'signal': signal,
+        'background': background,
+        'n-signal-accept': signal * tpr,
+        'n-background-accept': background * fpr,
+    }
+
+def test_sb(test_dataset, sig_prob, threshold):
+    # Jiayang
+
+    output = test_false_true_negative_positive(test_dataset, sig_prob, threshold)
+
+    S = output['signal'] * output['true-positive']
+    B = output['background'] * output['false-positive']
+    if S+B == 0:
+        return 0
+    metric = S/np.sqrt(S+B)
+    return metric
+
 def test_candidate_true_false_positive_negative(test_data, selection_method=q2_resonances):
     
     s, ns = selection_method(test_data)
