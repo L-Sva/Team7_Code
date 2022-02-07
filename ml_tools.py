@@ -37,60 +37,6 @@ def ml_strip_columns(dataframe,
 
     return dataframe
 
-def ml_train_model(training_data, model, **kwargs):
-    """Trains a ML model. Requires that the parameter `training_data` contains a column named 'category'
-    which will be the value the ML model is trained to predict; this should contain only integers,
-    preferably only 0 or 1.
-    """
-
-    train_vars = training_data.drop('category',axis=1)
-    model.fit(train_vars.values, training_data['category'].to_numpy().astype('int'), **kwargs)
-    return model
-
-def _train_test_split(dataset, test_size, random_state = 1):
-    dataset_reorder = dataset.sample(frac=1, axis=0, random_state = random_state)
-    dataset_reorder = dataset_reorder.reset_index(drop=True)
-    m = int ((1-test_size) * len(dataset_reorder))
-    return dataset_reorder[0:m], dataset_reorder[m:]
-
-def ml_prepare_train_test(dataset, randomiser_seed = 1) -> Tuple[pd.DataFrame, pd.DataFrame]:
-    """Takes a dataset and splits it into test and train datasets"""
-    # Marek
-    train, test = _train_test_split(dataset, test_size = 0.2, random_state=randomiser_seed)
-    return train, test
-
-def ml_prepare_train_validate_test(dataset, randomiser_seed_a = 1, randomiser_seed_b = 2) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-
-    train_validate, test = ml_prepare_train_test(dataset, randomiser_seed = randomiser_seed_a)
-    train, validate = ml_prepare_train_test(train_validate, randomiser_seed = randomiser_seed_b)
-    return train, validate, test
-
-
-def ml_combine_signal_bk(signal_dataset, background_dataset):
-    """Combines signal and background dataset, adding category labels
-    """
-    # Marek
-    signal_dataset = signal_dataset.copy()
-    background_dataset = background_dataset.copy()
-    signal_dataset.loc[:,'category'] = 1
-    background_dataset.loc[:,'category'] = 0
-
-    dataset = pd.DataFrame(
-        np.concatenate((background_dataset.values, signal_dataset.values), axis = 0),
-        columns = [name for name in signal_dataset]
-    )
-    dataset = dataset.reset_index(drop=True)
-    dataset_reorder = dataset.sample(frac=1, axis=0)
-    dataset_reorder = dataset_reorder.reset_index(drop=True)
-    return dataset_reorder
-
-def ml_get_model_sig_prob(testData, model):
-    if 'category' in testData:
-        test_vars = testData.drop('category',axis=1)
-    else:
-        test_vars = testData
-    return model.predict_proba(test_vars.values)[:,1]
-
 def test_false_true_negative_positive(test_dataset, sig_prob, threshold) -> dict:
     # Jiayang
 
@@ -176,8 +122,9 @@ def test_sb(test_dataset, sig_prob, threshold):
 
     S = output['signal'] * output['true-positive']
     B = output['background'] * output['false-positive']
+    if S+B == 0:
+        return 0
     metric = S/np.sqrt(S+B)
-
     return metric
 
 
