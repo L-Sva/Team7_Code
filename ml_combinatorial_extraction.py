@@ -18,9 +18,10 @@ def load_combinatorial_train_validate_test(train_samples_limit = None, remove_co
 
     reject_column_names = ()
     if remove_columns:
-            reject_column_names = ('B0_MM','Kstar_MM')
+            reject_column_names = ('B0_MM','Kstar_MM','B0_ID','polarity')
 
     def strip_columns(data):
+        data = list(data)
         for i in range(len(data)):
             data[i] = ml_tools.ml_strip_columns(data[i], reject_column_names=reject_column_names)
         return data

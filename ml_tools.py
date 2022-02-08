@@ -25,7 +25,7 @@ def ml_strip_columns(dataframe,
     dataframe = dataframe.copy()
 
     # Drops 'year' and 'B0_ID' columns
-    columns_names_to_drop = ('year','B0_ID','polarity')
+    columns_names_to_drop = ('year')
 
     # Drops any columns added during processing not specified to keep
     for name in dataframe:

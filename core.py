@@ -48,8 +48,6 @@ def combine_n_selectors(*selectors):
         for i, selector in enumerate(selectors):
             yes, no_sel = selector(yes, *expected[i])
             no.append(no_sel)
-            if len(yes) < 100:
-                raise ValueError('len')
         return yes, pd.concat(no)
     return combined_selectors
 

@@ -1,16 +1,17 @@
 
+from pickletools import optimize
 from typing import Tuple
 from pandas import DataFrame
 import scipy
 import xgboost
-from core import ensure_dir, load_file, RAWFILES
+from core import combine_n_selectors, ensure_dir, load_file, RAWFILES
 from histrogram_plots import generic_selector_plot, plot_hist_quantity
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import os
 
-import ml_tools
+import ml_tools, ml_combinatorial_extraction
 
 def load_train_validate_test(file, test_size=0.2, validate_size=0.16):
     data = load_file(file)
@@ -53,7 +54,7 @@ def concat_datasets(datasets):
         res.append(combine)
     return res
 
-def fit_new_model(train_data, **params):
+def fit_new_model(train_data, reject_column_names=('B0_ID','polarity'), **params):
     default_params = {
         'n_estimators': 400,
         'subsample': 1,
@@ -66,8 +67,9 @@ def fit_new_model(train_data, **params):
     for key, value in params.items():
         default_params[key] = value
     model = xgboost.XGBClassifier(use_label_encoder=False,**default_params)
+    train_data_c = ml_tools.ml_strip_columns(train_data, reject_column_names=reject_column_names)
     model.fit(
-        train_data.drop('category',axis=1).values,
+        train_data_c.drop('category',axis=1).values,
         train_data['category'].to_numpy().astype('int'),
         eval_metric='logloss'
     )
@@ -87,18 +89,17 @@ def load_model_file(path):
     model.load_model(path)
     return model
 
-def select(data, model, thresh):
-    if 'category' in data:
-        data = data.drop('category',axis=1)
-    sig_prob = model.predict_proba(data.values)[:,1]
+def select(data, model, thresh, reject_column_names=('B0_ID','polarity')):
+    data_c = ml_tools.ml_strip_columns(data, reject_column_names=reject_column_names)
+    sig_prob = model.predict_proba(data_c.values)[:,1]
     accept = sig_prob > thresh
     s = data[accept]
     ns = data[~accept]
     return s, ns
 
-def make_selector(model, thresh):
+def make_selector(model, thresh, reject_column_names=('B0_ID','polarity')):
     def generated_selector(data):
-        return select(data, model, thresh)
+        return select(data, model, thresh, reject_column_names)
     return generated_selector
 
 def plot_sb(data, sig_prob, bk_penalty=1):
@@ -116,8 +117,9 @@ def optimize_threshold(validate_dataset, sig_prob, bk_penalty=1):
     thresh = optimize_result.x[0]
     return thresh
 
-def predict_prob(data, model):
-    return model.predict_proba(data.drop('category',axis=1).values)[:,1]
+def predict_prob(data, model, reject_column_names=('B0_ID','polarity')):
+    data_c = ml_tools.ml_strip_columns(data, reject_column_names=reject_column_names)
+    return model.predict_proba(data_c.drop('category',axis=1).values)[:,1]
 
 def plot_features(xge_model, train_data):
     xge_model.get_booster().feature_names = [x for x in train_data.drop('category', axis=1)]
@@ -132,15 +134,16 @@ if __name__ == '__main__':
 
     signal = load_train_validate_test(RAWFILES.SIGNAL, validate_size=0)
     #background = load_train_validate_test(RAWFILES.JPSI, validate_size=0)
+    #background = load_train_validate_test(RAWFILES.PHIMUMU, validate_size=0)
     background = concat_datasets([load_train_validate_test(file, validate_size=0) for file in RAWFILES.peaking_bks])
-    background = load_train_validate_test(RAWFILES.PHIMUMU, validate_size=0)
     train, test = combine_signal_background(signal, background)
 
     ML_SAVE_DIR = 'ml_models'
 
-    MODEL_PATH = os.path.join(ML_SAVE_DIR,'pk_hyperparameters_opt_best.model')
     MODEL_PATH = os.path.join(ML_SAVE_DIR,'0009_psi2S_quick.model')
     MODEL_PATH = os.path.join(ML_SAVE_DIR,'0010_phimumu_quick.model')
+    MODEL_PATH = os.path.join(ML_SAVE_DIR,'pk_hyperparameters_opt_best.model')
+    COMB_MODEL_PATH = os.path.join(ML_SAVE_DIR,'comb_hyperparameters_opt_best.model')
 
     if not os.path.exists(MODEL_PATH):
         model = fit_new_model(train[:30000])
@@ -149,28 +152,43 @@ if __name__ == '__main__':
         model = load_model_file(MODEL_PATH)
 
     sig_prob = predict_prob(test, model)
-    thresh = optimize_threshold(test, sig_prob, bk_penalty=10)
+    bk_penalty = 40
+    thresh = optimize_threshold(test, sig_prob, bk_penalty=bk_penalty)
 
     print('Chosen threshold:', thresh)
     print(ml_tools.test_false_true_negative_positive(test, sig_prob, thresh))
 
     plot_features(model, train)
-    plt.show()
+    plt.close()
 
-    plot_sb(test, sig_prob)
-    plt.show()
+    plot_sb(test, sig_prob, bk_penalty=bk_penalty)
+    plt.axvline(thresh, color='r')
+    plt.close()
 
     selector = make_selector(model, thresh)
 
+    _, _, comb_test = ml_combinatorial_extraction.load_combinatorial_train_validate_test()
+
+    comb_model = load_model_file(COMB_MODEL_PATH)
+    thresh_2 = optimize_threshold(
+        comb_test, 
+        predict_prob(comb_test,comb_model, reject_column_names=('B0_ID','polarity','B0_MM','Kstar_MM'))
+    )
+    selector_2 = make_selector(comb_model, thresh_2, reject_column_names=('B0_ID','polarity','B0_MM','Kstar_MM'))
+
+    selector = combine_n_selectors(selector, selector_2)
+
     IMAGE_OUTPUT_DIR = '_ml_histograms_on_total'
-    OUTPUT_PLOTS = False
+    OUTPUT_PLOTS = True
 
     ensure_dir(IMAGE_OUTPUT_DIR)
 
+    total = load_train_validate_test(RAWFILES.TOTAL_DATASET, test_size = 0, validate_size= 0)
+    signal_all = load_train_validate_test(RAWFILES.SIGNAL, test_size = 0, validate_size= 0)
+    s, ns = selector(total)
+    num = len(total)
+    print(f'{RAWFILES.TOTAL_DATASET} | accepted: {len(s)} ({len(s)/num}), rejected {len(ns)} ({len(ns)/num})')
     if OUTPUT_PLOTS:
-        total = load_train_validate_test(RAWFILES.TOTAL_DATASET, test_size = 0, validate_size= 0)
-        signal_all = load_train_validate_test(RAWFILES.SIGNAL, test_size = 0, validate_size= 0)
-        s, ns = selector(total)
         for column in total:
             bins, h = plot_hist_quantity(total, column, label='Total dataset', bins=150)
             plot_hist_quantity(s, column, label='ML - Signal', bins = bins)
