@@ -30,7 +30,7 @@ def Kstar_inv_mass(dataframe):
     not_subset = dataframe.iloc[not_subset]
 
     return subset, not_subset
-def B0_vertex_chi2(dataframe, alpha=0.2):
+def B0_vertex_chi2(dataframe, alpha=0.1):
     '''
     Input: dataframe - a dataframe need to be processed
             alpha - (in range 0 to 1) threshold of the propability of obtaining 
@@ -48,29 +48,24 @@ def B0_vertex_chi2(dataframe, alpha=0.2):
     not_subset = dataframe[dataframe['B0_ENDVERTEX_CHI2'] > threshold] 
     return subset, not_subset
 
-def final_state_particle_IP(dataframe, alpha=0.02):
-    '''
-    Input: dataframe - dataframe need to be processed
-    alpha - (0 to 1) probability threshold: chi2 values that give probability
-            lower than this threshold are selected (high chi2, low probability of 
-            being a particle form the PV).
+def final_state_particle_IP(dataframe, threshold =9.):
+
+    yes_1 = dataframe[dataframe['mu_plus_IPCHI2_OWNPV'] > threshold]   
+    no_1 = dataframe[dataframe['mu_plus_IPCHI2_OWNPV'] <= threshold]
+
+    yes_2 = yes_1[yes_1['mu_minus_IPCHI2_OWNPV'] > threshold]
+    no_2 = yes_1[yes_1['mu_minus_IPCHI2_OWNPV'] <= threshold]
     
-    Output: subset - selected candidates
-            not_subset - rejected candidates 
-    '''
-    def func(x):
-        return ss.chi2.sf(x,4) - alpha  #scipy.stats.chi2.sf givs the survival function of chi2 distribution
-        # 4 degrees of freedom for IP (4 pieces of info in track + 3 position of PV - 3 position of closest approach)
+    yes_3 = yes_2[yes_2['K_IPCHI2_OWNPV'] > threshold]
+    no_3 = yes_2[yes_2['K_IPCHI2_OWNPV'] <= threshold]
     
-    threshold = float(fsolve(func, 4.))
-    subset = dataframe[(dataframe['mu_plus_IPCHI2_OWNPV'] > threshold) & \
-            (dataframe['mu_minus_IPCHI2_OWNPV'] > threshold) & \
-            (dataframe['K_IPCHI2_OWNPV'] > threshold) & \
-            (dataframe['Pi_IPCHI2_OWNPV'] > threshold)]
-    mu_plus = dataframe[dataframe['mu_plus_IPCHI2_OWNPV'] <= threshold]
-    mu_minus = mu_plus[mu_plus['mu_plus_IPCHI2_OWNPV'] <= threshold]
-    K = mu_minus[mu_minus['K_IPCHI2_OWNPV'] <= threshold]
-    not_subset = K[K['Pi_IPCHI2_OWNPV'] <= threshold]
+    yes_4 = yes_3[yes_3['Pi_IPCHI2_OWNPV'] > threshold]
+    no_4 = yes_3[yes_3['Pi_IPCHI2_OWNPV'] <= threshold]
+        
+    subset = yes_4
+          
+    not_subset = pd.concat([no_1, no_2, no_3, no_4])
+    
     return subset, not_subset
 
 def B0_IP_chi2(dataframe,threshold=9.):
@@ -78,17 +73,17 @@ def B0_IP_chi2(dataframe,threshold=9.):
     reject = dataframe[dataframe['B0_IPCHI2_OWNPV'] >= threshold]
     return accept, reject
 
-def FD(dataframe, threshold=10.):
+def FD(dataframe, threshold=4.):
     '''
     Input: dataframe - the dataframe need to be cleaned
-            threshold - minimum flight distance accepted (default = 10.) in units of mm
+            threshold - minimum flight distance accepted (default = 4.) in units of mm
     Output: subset and not_subset
     '''
     subset = dataframe[dataframe['B0_FD_OWNPV'] > threshold]
     not_subset = dataframe[dataframe['B0_FD_OWNPV'] <= threshold]
     return subset, not_subset
 
-def DIRA(dataframe, threshold=0.9999999):
+def DIRA(dataframe, threshold=0.9994):
     subset = dataframe[dataframe['B0_DIRA_OWNPV']>threshold]
     not_subset = dataframe[dataframe['B0_DIRA_OWNPV']<=threshold]
     return subset, not_subset
@@ -134,9 +129,9 @@ def Particle_ID(dataframe_1):
 
     return subset, not_subset
 #%% Selection Criteria ALL
-def selection_all(dataframe, B0_vertex_prob_threshold=0.2, \
-    final_particle_prob_threshold=0.02, B0_IP_chi2_threshold=9., \
-        B0_FD_threshold=10., DIRA_threshold=0.9999999):
+def selection_all(dataframe, B0_vertex_prob_threshold=0.1, \
+    final_particle_prob_threshold=9., B0_IP_chi2_threshold=9., \
+        B0_FD_threshold=4., DIRA_threshold=0.9994):
 
     yes_PID, no_PID = Particle_ID(dataframe)
     print('Particle ID done')
