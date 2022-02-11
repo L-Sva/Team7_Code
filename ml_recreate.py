@@ -1,5 +1,3 @@
-
-from pickletools import optimize
 from typing import Tuple
 from pandas import DataFrame
 import scipy
@@ -11,7 +9,7 @@ import pandas as pd
 import numpy as np
 import os
 
-import ml_tools, ml_combinatorial_extraction
+import ml_tools
 
 def load_train_validate_test(file, test_size=0.2, validate_size=0.16):
     data = load_file(file)
@@ -118,11 +116,12 @@ def optimize_threshold(validate_dataset, sig_prob, bk_penalty=1):
     return thresh
 
 def predict_prob(data, model, reject_column_names=('B0_ID','polarity')):
-    data_c = ml_tools.ml_strip_columns(data, reject_column_names=reject_column_names)
-    return model.predict_proba(data_c.drop('category',axis=1).values)[:,1]
+    data_c = ml_tools.ml_strip_columns(data, reject_column_names=reject_column_names+['category'])
+    return model.predict_proba(data_c.values)[:,1]
 
-def plot_features(xge_model, train_data):
-    xge_model.get_booster().feature_names = [x for x in train_data.drop('category', axis=1)]
+def plot_features(xge_model, data,  reject_column_names=('B0_ID','polarity')):
+    data_c = ml_tools.ml_strip_columns(data, reject_column_names=reject_column_names+['category'])
+    xge_model.get_booster().feature_names = [x for x in data_c]
     xgboost.plot_importance(xge_model, max_num_features=20)
     plt.tight_layout()
 
@@ -131,6 +130,8 @@ def plot_roc_curve(xge_model, test_data):
     ml_tools.plot_roc_curve(roc_curve_res['fpr'],roc_curve_res['tpr'],roc_curve_res['area'])
 
 if __name__ == '__main__':
+
+    import ml_combinatorial_extraction
 
     signal = load_train_validate_test(RAWFILES.SIGNAL, validate_size=0)
     #background = load_train_validate_test(RAWFILES.JPSI, validate_size=0)
@@ -141,8 +142,10 @@ if __name__ == '__main__':
     ML_SAVE_DIR = 'ml_models'
 
     MODEL_PATH = os.path.join(ML_SAVE_DIR,'0009_psi2S_quick.model')
+    MODEL_PATH = os.path.join(ML_SAVE_DIR,'0011_jpsi_quick.model')
     MODEL_PATH = os.path.join(ML_SAVE_DIR,'0010_phimumu_quick.model')
     MODEL_PATH = os.path.join(ML_SAVE_DIR,'pk_hyperparameters_opt_best.model')
+
     COMB_MODEL_PATH = os.path.join(ML_SAVE_DIR,'comb_hyperparameters_opt_best.model')
 
     if not os.path.exists(MODEL_PATH):
@@ -159,7 +162,7 @@ if __name__ == '__main__':
     print(ml_tools.test_false_true_negative_positive(test, sig_prob, thresh))
 
     plot_features(model, train)
-    plt.close()
+    plt.show()
 
     plot_sb(test, sig_prob, bk_penalty=bk_penalty)
     plt.axvline(thresh, color='r')
@@ -179,7 +182,7 @@ if __name__ == '__main__':
     selector = combine_n_selectors(selector, selector_2)
 
     IMAGE_OUTPUT_DIR = '_ml_histograms_on_total'
-    OUTPUT_PLOTS = True
+    OUTPUT_PLOTS = False
 
     ensure_dir(IMAGE_OUTPUT_DIR)
 
@@ -214,7 +217,7 @@ if __name__ == '__main__':
         print(f'{file} | accepted: {len(s)} ({len(s)/num}), rejected {len(ns)} ({len(ns)/num})')
         if OUTPUT_PLOTS:
             cols = [col for col in test]
-            cols = ['q2']
+            #cols = ['q2']
             N = len(cols)
             i = 1
             for col in cols:
