@@ -4,6 +4,7 @@ import scipy
 import xgboost
 from core import combine_n_selectors, ensure_dir, load_file, RAWFILES
 from histrogram_plots import generic_selector_plot, plot_hist_quantity
+from ES_functions.Compiled import q2_resonances
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -17,6 +18,9 @@ def load_train_validate_test(file, test_size=0.2, validate_size=0.16):
     return split_train_validate_test(data, test_size, validate_size)
 
 def split_train_validate_test(data, test_size=0.2, validate_size=0.16):
+    """Loads training, validate and test data from a file. Returns a tuple of pandas 
+    Dataframes, or a single pandas dataframe if both test_size and validate_size are 0.
+    """
     if test_size == 0:
         return data
     else:
@@ -96,6 +100,8 @@ def select(data, model, thresh, reject_column_names=('B0_ID','polarity')):
     return s, ns
 
 def make_selector(model, thresh, reject_column_names=('B0_ID','polarity')):
+    """Creates a wrapper around an ML model which allows it to be treated as a
+    simple selector function"""
     def generated_selector(data):
         return select(data, model, thresh, reject_column_names)
     return generated_selector
@@ -104,6 +110,13 @@ def plot_sb(data, sig_prob, bk_penalty=1):
     thresh_list = np.linspace(0.1, 1, 600)
     sb = [
         ml_tools.test_sb(data,sig_prob, t, bk_penalty) for t in thresh_list
+    ]
+    plt.plot(thresh_list,sb)
+
+def plot_sb_null_test(data, sig_prob):
+    thresh_list = np.linspace(0.1, 1, 600)
+    sb = [
+        ml_tools.test_sb_null_test(data,sig_prob, t) for t in thresh_list
     ]
     plt.plot(thresh_list,sb)
 
@@ -116,11 +129,11 @@ def optimize_threshold(validate_dataset, sig_prob, bk_penalty=1):
     return thresh
 
 def predict_prob(data, model, reject_column_names=('B0_ID','polarity')):
-    data_c = ml_tools.ml_strip_columns(data, reject_column_names=reject_column_names+['category'])
+    data_c = ml_tools.ml_strip_columns(data, reject_column_names=list(reject_column_names)+['category'])
     return model.predict_proba(data_c.values)[:,1]
 
 def plot_features(xge_model, data,  reject_column_names=('B0_ID','polarity')):
-    data_c = ml_tools.ml_strip_columns(data, reject_column_names=reject_column_names+['category'])
+    data_c = ml_tools.ml_strip_columns(data, reject_column_names=list(reject_column_names)+['category'])
     xge_model.get_booster().feature_names = [x for x in data_c]
     xgboost.plot_importance(xge_model, max_num_features=20)
     plt.tight_layout()
@@ -155,16 +168,19 @@ if __name__ == '__main__':
         model = load_model_file(MODEL_PATH)
 
     sig_prob = predict_prob(test, model)
-    bk_penalty = 40
+    bk_penalty = 1
     thresh = optimize_threshold(test, sig_prob, bk_penalty=bk_penalty)
 
     print('Chosen threshold:', thresh)
     print(ml_tools.test_false_true_negative_positive(test, sig_prob, thresh))
 
     plot_features(model, train)
-    plt.show()
+    plt.close()
 
-    plot_sb(test, sig_prob, bk_penalty=bk_penalty)
+    plot_sb(test, sig_prob, bk_penalty=1)
+    plot_sb(test, sig_prob, bk_penalty=40)
+    # plot_sb_null_test(test, sig_prob)
+    plt.legend(['Power of analysis','Power of analysis, penalty 40','Significance'])
     plt.axvline(thresh, color='r')
     plt.close()
 
@@ -178,8 +194,9 @@ if __name__ == '__main__':
         predict_prob(comb_test,comb_model, reject_column_names=('B0_ID','polarity','B0_MM','Kstar_MM'))
     )
     selector_2 = make_selector(comb_model, thresh_2, reject_column_names=('B0_ID','polarity','B0_MM','Kstar_MM'))
+    print('Combinatorial background threshold:', thresh_2)
 
-    selector = combine_n_selectors(selector, selector_2)
+    selector = combine_n_selectors(selector, selector_2, q2_resonances)
 
     IMAGE_OUTPUT_DIR = '_ml_histograms_on_total'
     OUTPUT_PLOTS = False
@@ -209,7 +226,7 @@ if __name__ == '__main__':
 
     ensure_dir(DIR)
 
-    for file in RAWFILES.peaking_bks:
+    for file in RAWFILES.peaking_bks + [RAWFILES.SIGNAL]:
         IMG_DIR = os.path.join(DIR, file[:-4])
         _, test = load_train_validate_test(file, validate_size=0)
         s, ns = selector(test)

@@ -1,11 +1,12 @@
 from core import RAWFILES
-from ml_recreate import combine_signal_background, load_model_file, load_train_validate_test, fit_new_model, plot_features, plot_sb
-from ml_recreate import make_selector, optimize_threshold, predict_prob
+from ml_recreate import combine_signal_background, load_model_file, load_train_validate_test, fit_new_model
+from ml_recreate import make_selector, optimize_threshold, predict_prob, plot_features, plot_sb
 from ml_tools import ml_strip_columns, test_false_true_negative_positive
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import os
+import xgboost
 
 def genOutlineSegments(mapimg, x0, x1, y0, y1):
     # Curtosy of:
@@ -50,8 +51,6 @@ signal = load_train_validate_test(RAWFILES.SIGNAL, validate_size=0)
 bk = load_train_validate_test(RAWFILES.PSI2S, validate_size=0)
 train, test = combine_signal_background(signal, bk)
 
-# names = [name for name in signal[0] if not name in ('category','J_psi_MM','B0_MM')]
-# names = [name for name in signal[0] if not name in ('q2','category','B0_MM')] 'pi_P'
 VAR_A = 'q2'
 VAR_B = 'B0_MM'
 
@@ -62,7 +61,6 @@ plt.sca(axs[0])
 plt.hist2d(signal[1][VAR_A].to_numpy(),signal[1][VAR_B].to_numpy(),bins=(50,100))
 plt.sca(axs[1])
 _, edgesX, edgesY, _ = plt.hist2d(bk[1][VAR_A].to_numpy(),bk[1][VAR_B].to_numpy(),bins=(50,100))
-#plt.ylim(top=5400)
 plt.close()
 
 ML_SAVE_DIR = 'ml_models'
@@ -119,7 +117,7 @@ plt.plot(*selector_boundary,color=(0.8,0.8,0,.7), linewidth=2,label='Selector bo
 plt.title('Signal')
 plt.ylabel('B0_MM')
 plt.xlabel('q2')
-plt.legend()
+plt.legend(loc='lower right')
 
 plt.sca(axs[1])
 plt.hist2d(bk[1][VAR_A].to_numpy(),bk[1][VAR_B].to_numpy(),bins=(50,100))
@@ -128,11 +126,14 @@ plt.plot(*selector_boundary,color=(0.8,0.8,0,.7), linewidth=2,label='Selector bo
 plt.title('PSI2S background')
 plt.xlabel('q2')
 
-plt.ylim(5240,5340)
+plt.ylim(5220,5340)
 plt.xlim(12.4,14.5)
 plt.show()
 
-exit()
+model.get_booster().feature_names = [VAR_B,VAR_A]
+
+# xgboost.plot_tree(model, rankdir='LR')
+# plt.show()
 
 
 

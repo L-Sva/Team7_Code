@@ -130,6 +130,17 @@ def test_sb(test_dataset, sig_prob, threshold, bk_penalty = 1):
     metric = S/np.sqrt(S+B)
     return metric
 
+def test_sb_null_test(test_dataset, sig_prob, threshold):
+
+    output = test_false_true_negative_positive(test_dataset, sig_prob, threshold)
+
+    S = output['signal'] * output['true-positive']
+    B = output['background'] * output['false-positive']
+    if S+B == 0:
+        return 0
+    metric = S/np.sqrt(B)
+    return metric
+
 
 def bayesian_nextpoint(function, pbounds, random_state=1, **util_args):
     """
