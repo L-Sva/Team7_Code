@@ -168,7 +168,7 @@ if __name__ == '__main__':
         model = load_model_file(MODEL_PATH)
 
     sig_prob = predict_prob(test, model)
-    bk_penalty = 1
+    bk_penalty = 40
     thresh = optimize_threshold(test, sig_prob, bk_penalty=bk_penalty)
 
     print('Chosen threshold:', thresh)
@@ -179,9 +179,12 @@ if __name__ == '__main__':
 
     plot_sb(test, sig_prob, bk_penalty=1)
     plot_sb(test, sig_prob, bk_penalty=40)
-    # plot_sb_null_test(test, sig_prob)
-    plt.legend(['Power of analysis','Power of analysis, penalty 40','Significance'])
+    plot_sb_null_test(test, sig_prob)
+    plt.legend(['S/sqrt(S+B)', 'S/sqrt(S+40*B)','S/sqrt(B)'])
     plt.axvline(thresh, color='r')
+    plt.yscale('log')
+    plt.xlabel('Threshold')
+    plt.ylabel('SB metric')
     plt.close()
 
     selector = make_selector(model, thresh)

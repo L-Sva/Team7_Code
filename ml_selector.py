@@ -27,6 +27,7 @@ remove_peaking_background = make_selector(pk_bk_model, PK_THRESH)
 remove_all_bk = combine_n_selectors(remove_combinatorial_background, remove_peaking_background, q2_resonances)
 
 if __name__ == '__main__':
-    test = load_file(RAWFILES.TOTAL_DATASET)
-    s, ns = remove_all_bk(test)
-    print(len(s), len(ns))
+
+    data = load_file(RAWFILES.TOTAL_DATASET)
+    subset, notsubset = remove_all_bk(data)
+    
