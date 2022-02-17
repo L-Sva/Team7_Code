@@ -138,7 +138,7 @@ for i in range (0,6):
                 SUM2+=cos_bw*P[i](q2_normal[k])*P[j](costhetal[s])*ratio[k][s]
             SUM1+=q2_bw[k]*SUM2
         c[i][j]=(2*i+1)/2*(2*j+1)/2*SUM1
-
+#%%
 np.savetxt('acceptance_func_parameters/costhetal_0.txt', costhetal)
 np.savetxt('acceptance_func_parameters/q2_normal_0.txt', q2_normal)
 np.savetxt('acceptance_func_parameters/c_0.txt', c)
@@ -189,7 +189,7 @@ ratio_1=get_ratio(q2bins_1,n_cosbin) # fitting points of F(q2,costhetal)
 
 q2_value_1=np.array([3.5, 11.75, 16.45]) #using the midpoint 
 
-q2_normal_1=(1/9.45)*(q2_value-9.55) #nomalization q2_normal has range [-1,1]
+q2_normal_1=(1/9.45)*(q2_value_1-9.55) #nomalization q2_normal has range [-1,1]
 
 q2_bw_1=np.array([5, 1.5, 2.9]) #q2bin width
 
@@ -197,20 +197,20 @@ cos_bw=2/n_cosbin # bin width of costhetal
 
 costhetal=np.linspace(-1+2/n_cosbin,1-2/n_cosbin,n_cosbin) # midpoint of costhetal bin
 
-c=np.zeros([10,10])# coefficients of the 2d legendre polynomial c_ij
+c_1=np.zeros([10,10])# coefficients of the 2d legendre polynomial c_ij
 
 for i in range (0,6): 
     for j in range (0,6): 
         SUM1=0
-        for k in range (len(q2_normal)): # sum up all q2 values
+        for k in range (len(q2_normal_1)): # sum up all q2 values
             SUM2=0
             for s in range (n_cosbin): # sum up all costhetal values
                 SUM2+=cos_bw*P[i](q2_normal_1[k])*P[j](costhetal[s])*ratio_1[k][s]
             SUM1+=q2_bw[k]*SUM2
-        c[i][j]=(2*i+1)/2*(2*j+1)/2*SUM1
+        c_1[i][j]=(2*i+1)/2*(2*j+1)/2*SUM1
 
 #%% Plot the acceptance function of the first q2 bin (i.e. i=0)
-costhetal=np.linspace(-0.99,0.99,1000)
+costhetal_1=np.linspace(-0.99,0.99,1000)
 def F (cos,q2,coe): # Continuous 2d acceptance function F(q2_normal,costhetal). Here we let q2_normal be fixed
     SUM=0
     for i in range (0,6): 
@@ -218,4 +218,8 @@ def F (cos,q2,coe): # Continuous 2d acceptance function F(q2_normal,costhetal). 
             SUM+=c[i][j]*P[i](q2)*P[j](cos)
     return SUM
 
-plt.plot(costhetal,F(costhetal,q2_normal_1[0],c))
+plt.plot(costhetal_1,F(costhetal_1,q2_normal_1[0],c_1))
+
+np.savetxt('acceptance_func_parameters/costhetal_1.txt', costhetal_1)
+np.savetxt('acceptance_func_parameters/q2_normal_1.txt', q2_normal_1)
+np.savetxt('acceptance_func_parameters/c_1.txt', c_1)
