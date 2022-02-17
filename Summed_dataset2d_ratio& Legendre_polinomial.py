@@ -3,21 +3,21 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from core import load_file
-from Compiled import selection_all
+from ES_functions.Compiled import selection_all
 
 plt.rcParams['font.size'] = 18
 
 def load_q2_binned():
     all_signal_files = [
-        '/Users/hukaiyu/Desktop/Y3/TBPS/jpsi_mu_k_swap', 
-        '/Users/hukaiyu/Desktop/Y3/TBPS/jpsi_mu_pi_swap', 
-        '/Users/hukaiyu/Desktop/Y3/TBPS/jpsi', 
-        '/Users/hukaiyu/Desktop/Y3/TBPS/k_pi_swap', 
-        '/Users/hukaiyu/Desktop/Y3/TBPS/phimumu',
-        '/Users/hukaiyu/Desktop/Y3/TBPS/pKmumu_piTok_kTop', 
-        '/Users/hukaiyu/Desktop/Y3/TBPS/pKmumu_piTop', 
-        '/Users/hukaiyu/Desktop/Y3/TBPS/psi2S', 
-        '/Users/hukaiyu/Desktop/Y3/TBPS/signal'
+        'jpsi_mu_k_swap', 
+        'jpsi_mu_pi_swap', 
+        'jpsi', 
+        'k_pi_swap', 
+        'phimumu',
+        'pKmumu_piTok_kTop', 
+        'pKmumu_piTop', 
+        'psi2S', 
+        'signal'
     ]
 
     data_dfs = [load_file(f'{file_name}.pkl')
@@ -25,7 +25,7 @@ def load_q2_binned():
     
     total_df = pd.concat(data_dfs) # all signal + peaking in one dataframe
     selected_df, _ = selection_all(total_df)
-    raw_signal_df = load_file('/Users/hukaiyu/Desktop/Y3/TBPS/signal.pkl')
+    raw_signal_df = load_file('signal.pkl')
     
     # bins ordered different, because np.histogram needs a
     # monotonically increasing array
