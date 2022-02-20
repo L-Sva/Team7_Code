@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import Tuple
 from pandas import DataFrame
 import scipy
@@ -56,8 +57,7 @@ def concat_datasets(datasets):
         res.append(combine)
     return res
 
-def fit_new_model(train_data, reject_column_names=('B0_ID','polarity'), **params):
-    default_params = {
+model_default_params = {
         'n_estimators': 400,
         'subsample': 1,
         'max_depth': 6,
@@ -66,6 +66,9 @@ def fit_new_model(train_data, reject_column_names=('B0_ID','polarity'), **params
         'reg_alpha': 1,
         'reg_lambda': 2,
     }
+
+def fit_new_model(train_data, reject_column_names=('B0_ID','polarity'), **params):
+    default_params = deepcopy(model_default_params)
     for key, value in params.items():
         default_params[key] = value
     model = xgboost.XGBClassifier(use_label_encoder=False,**default_params)
@@ -78,18 +81,18 @@ def fit_new_model(train_data, reject_column_names=('B0_ID','polarity'), **params
     return model
 
 def load_model_file(path):
-    params = {
-        'n_estimators': 400,
-        'subsample': 1,
-        'max_depth': 6,
-        'learning_rate': 0.05,
-        'gamma': 0,
-        'reg_alpha': 1,
-        'reg_lambda': 2,
-    }
+    params = deepcopy(model_default_params)
     model = xgboost.XGBClassifier(use_label_encoder=False,**params)
     model.load_model(path)
     return model
+
+def file_cached_model_fit(model_path, train_data, reject_column_names=('B0_ID','polarity'), **params):
+        if not os.path.exists(model_path):
+            model = fit_new_model(train_data, reject_column_names, **params)
+            model.save_model(model_path)
+        else:
+            model = load_model_file(model_path)
+        return model
 
 def select(data, model, thresh, reject_column_names=('B0_ID','polarity')):
     data_c = ml_tools.ml_strip_columns(data, reject_column_names=reject_column_names)
@@ -161,11 +164,7 @@ if __name__ == '__main__':
 
     COMB_MODEL_PATH = os.path.join(ML_SAVE_DIR,'comb_hyperparameters_opt_best.model')
 
-    if not os.path.exists(MODEL_PATH):
-        model = fit_new_model(train[:30000])
-        model.save_model(MODEL_PATH)
-    else:
-        model = load_model_file(MODEL_PATH)
+    model = file_cached_model_fit(MODEL_PATH, train)
 
     sig_prob = predict_prob(test, model)
     bk_penalty = 40

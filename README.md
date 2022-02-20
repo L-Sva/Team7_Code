@@ -8,10 +8,18 @@ By default .pkl will not be uploaded to github when you upload your code.
 Code to load and save .pkl files, as well as an example selector function, are in `core.py` .
 Example of how to use this is in `example_of_using_core.py` .
 
+In order to import and run the machine learning selector, use the code
+```python
+    from ml_selector import remove_all_bks
+    from core import load_file, RAWFILES
+    data = load_file(RAWFILES.TOTAL_DATASET)
+    subset, notsubset = remove_all_bk(data)
+```
+
 ## Running on college PC in console (using Anaconda on apps anywhere):
 
 - Copy the project to somewhere on H: drive
-- Copy the directory `bayes_opt` from https://github.com/fmfn/BayesianOptimization into the project root directory
+- (If using bayesian optimisation) Copy the directory `bayes_opt` from https://github.com/fmfn/BayesianOptimization into the project root directory
 - Open Anaconda Navigator
 - Open console_shortcut
 - Navigate to the directory with your python files (using `h:` and `cd /path/to/dir`)
