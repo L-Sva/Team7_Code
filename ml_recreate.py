@@ -1,4 +1,5 @@
 from copy import deepcopy
+from functools import lru_cache
 from typing import Tuple
 from pandas import DataFrame
 import scipy
@@ -13,6 +14,7 @@ import os
 
 import ml_tools
 
+@lru_cache
 def load_train_validate_test(file, test_size=0.2, validate_size=0.16):
     data = load_file(file)
     data = ml_tools.ml_strip_columns(data)

@@ -1,0 +1,26 @@
+Training / loading jpsi model
+{'true-positive': 0.9962124100765144, 'false-positive': 0.027757714143697043, 'true-negative': 0.972242285856303, 'false-negative': 0.0037875899234855997, 'signal': 157356, 'background': 128757, 'n-signal-accept': 156760.0, 'n-background-accept': 3574.0}
+jpsi | accepted: 378953, reject: 119292
+Training / loading jpsi_mu_k_swap model
+{'true-positive': 0.9798994974874372, 'false-positive': 0.0018584953537616156, 'true-negative': 0.9981415046462384, 'false-negative': 0.020100502512562814, 'signal': 398, 'background': 285715, 'n-signal-accept': 390.0, 'n-background-accept': 531.0}jpsi_mu_k_swap | accepted: 2678, reject: 495567
+Training / loading jpsi_mu_pi_swap model
+{'true-positive': 0.9161290322580645, 'false-positive': 0.0008462781247595801, 'true-negative': 0.9991537218752404, 'false-negative': 0.08387096774193549, 'signal': 155, 'background': 285958, 'n-signal-accept': 142.0, 'n-background-accept': 242.0} 
+jpsi_mu_pi_swap | accepted: 728, reject: 497517
+Training / loading k_pi_swap model
+{'true-positive': 0.9396826587643947, 'false-positive': 0.002940791045811589, 'true-negative': 0.9970592089541884, 'false-negative': 0.06031734123560523, 'signal': 26659, 'background': 259454, 'n-signal-accept': 25051.0, 'n-background-accept': 763.0}
+k_pi_swap | accepted: 24529, reject: 473716
+Training / loading phimumu model
+{'true-positive': 0.9813378220140515, 'false-positive': 0.0008919100455498094, 'true-negative': 0.9991080899544502, 'false-negative': 0.018662177985948478, 'signal': 13664, 'background': 272449, 'n-signal-accept': 13409.0, 'n-background-accept': 243.0}
+phimumu | accepted: 5436, reject: 492809
+Training / loading pKmumu_piTop model
+{'true-positive': 0.6991150442477876, 'false-positive': 6.296193950756767e-05, 'true-negative': 0.9999370380604924, 'false-negative': 0.3008849557522124, 'signal': 226, 'background': 285887, 'n-signal-accept': 158.0, 'n-background-accept': 18.0}   
+pKmumu_piTop | accepted: 1927, reject: 496318
+Training / loading pKmumu_piTok_kTop model
+{'true-positive': 0.7379310344827587, 'false-positive': 6.64747063742246e-05, 'true-negative': 0.9999335252936258, 'false-negative': 0.2620689655172414, 'signal': 290, 'background': 285823, 'n-signal-accept': 214.0, 'n-background-accept': 19.0}    
+pKmumu_piTok_kTop | accepted: 1345, reject: 496900
+Training / loading psi2S model
+{'true-positive': 0.9906118842500552, 'false-positive': 0.005350204284165076, 'true-negative': 0.9946497957158349, 'false-negative': 0.009388115749944775, 'signal': 36216, 'background': 249897, 'n-signal-accept': 35876.0, 'n-background-accept': 1337.0}
+psi2S | accepted: 53010, reject: 445235
+Training / loading combinatorial_only_removal model
+{'true-positive': 0.9873193055654159, 'false-positive': 0.185310657903652, 'true-negative': 0.814689342096348, 'false-negative': 0.01268069443458411, 'signal': 183113, 'background': 14759, 'n-signal-accept': 180791.0, 'n-background-accept': 2735.0}
+combinatorial_only_removal | accepted: 436573, reject: 61672

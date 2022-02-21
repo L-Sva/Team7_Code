@@ -1,7 +1,6 @@
 __pycache__
 *.pkl
 _localOnly*
-optimisation_models/*.model
-optimisation_models_comb/*.model
+optimisation_models_*/*.model
 *.7z
 data_ml_selectors_histograms/

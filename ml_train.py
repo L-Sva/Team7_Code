@@ -1,4 +1,5 @@
 
+from ES_functions.Compiled import q2_resonances
 from ml_recreate import fit_new_model, load_train_validate_test, concat_datasets, combine_signal_background, optimize_threshold, predict_prob
 from core import RAWFILES
 import ml_tools, ml_combinatorial_extraction
@@ -9,10 +10,13 @@ train and validate models using params from BayesianOptimization
 """
 
 TRAIN_COMB_BK = False
+REMOVE_Q2_FIRST = True
 
-SAVE_FOLDER = 'optimisation_models'
+SAVE_FOLDER = 'optimisation_models_peaking'
 if TRAIN_COMB_BK:
     SAVE_FOLDER = 'optimisation_models_comb'
+if REMOVE_Q2_FIRST:
+    SAVE_FOLDER + SAVE_FOLDER + '_noQ2'
 
 def ml_train_validate_combinatorial(**hyperparams):
     train, validate, test = (
@@ -29,7 +33,11 @@ def ml_train_validate_peaking(**hyperparams):
     return ml_train_validate(train, validate, **hyperparams)
 
 
-def ml_train_validate(train_data, validate_data, **hyperparams, ):
+def ml_train_validate(train_data, validate_data, **hyperparams):
+    if remove_q2_first:
+        train_data, _ = q2_resonances(train_data)
+        validate_data, _ = q2_resonances(validate_data)
+    
     # Convert some hyperparams to integer values
     hyperparams['n_estimators'] = int(hyperparams['n_estimators'] )
     hyperparams['max_depth'] = int(hyperparams['max_depth'])
