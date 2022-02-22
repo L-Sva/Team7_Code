@@ -1,6 +1,6 @@
 
 from ES_functions.Compiled import q2_resonances
-from ml_recreate import fit_new_model, load_train_validate_test, concat_datasets, combine_signal_background, optimize_threshold, predict_prob
+from ml_main import fit_new_model, load_train_validate_test, concat_datasets, combine_signal_background, optimize_threshold, predict_prob
 from core import RAWFILES
 import ml_tools, ml_combinatorial_extraction
 import os

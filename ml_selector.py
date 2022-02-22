@@ -5,7 +5,7 @@ import os
 import matplotlib.pyplot as plt
 from core import RAWFILES, combine_n_selectors, load_file
 from ES_functions.Compiled import q2_resonances
-from ml_recreate import make_selector, load_model_file
+from ml_main import make_selector, load_model_file
 
 IMAGE_OUTPUT_DIR = 'data_ml_selectors_histograms'
 ML_SAVE_DIR = 'ml_models'
