@@ -2,26 +2,15 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from core import load_file
+from core import RAWFILES, load_file
 from ES_functions.Compiled import selection_all
 
 plt.rcParams['font.size'] = 18
 
 def load_q2_binned():
-    all_signal_files = [
-        'jpsi_mu_k_swap', 
-        'jpsi_mu_pi_swap', 
-        'jpsi', 
-        'k_pi_swap', 
-        'phimumu',
-        'pKmumu_piTok_kTop', 
-        'pKmumu_piTop', 
-        'psi2S', 
-        'signal'
-    ]
+    all_signal_files = RAWFILES.all_signal_files
 
-    data_dfs = [load_file(f'{file_name}.pkl')
-                for file_name in all_signal_files]
+    data_dfs = [load_file(f) for f in all_signal_files]
     
     total_df = pd.concat(data_dfs) # all signal + peaking in one dataframe
     selected_df, _ = selection_all(total_df)

@@ -20,6 +20,7 @@ class RAWFILES:
     ACCEPTANCE = 'acceptance_mc.pkl'
     peaking_bks = [JPSI, JPSI_MU_K_SWAP, JPSI_MU_PI_SWAP, K_PI_SWAP,
         PHIMUMU, PKMUMU_PI_TO_P, PKMUMU_PI_TO_K_K_TO_P, PSI2S]
+    all_signal_files = peaking_bks + [SIGNAL]
     
 def load_file(filename='total_dataset.pkl', folder='data') -> pd.DataFrame:
     res = None
