@@ -63,11 +63,16 @@ In order to import and run the machine learning selector, use the code
         Code for estimating remaining peaking background events after main ML 
         selector
     ml_recreate.py
-
+        Core ML code to manipulate data, train models and interact with models
     ml_selector.py
+        Selectors to remove peaking bk, combinatorial bk or all bk based on ML 
+        models
     ml_tools.py
+        Tools for ML, mainly testing / visulisation
     ml_train.py
+        Code for hyperparameter optimisation of ML models
     selection_cuts_hist.py
+        Plotting historgrams of selection cuts
     starter_notebook-Copy1.ipynb
     starter_notebook.ipynb
     Summed_dataset2d_ratio_Legendre_polinomial.py
