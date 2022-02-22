@@ -16,7 +16,7 @@ COMB_THRESH = 0.66
 
 PK_BK_MODEL_FILE_NAME = 'pk_hyperparameters_opt_best.model'
 PK_BK_PATH = os.path.join(ML_SAVE_DIR,PK_BK_MODEL_FILE_NAME)
-PK_THRESH = 0.876
+PK_THRESH = 0.81
 
 comb_bk_model = load_model_file(COMB_BK_PATH)
 remove_combinatorial_background = make_selector(comb_bk_model, COMB_THRESH, 
@@ -30,4 +30,4 @@ if __name__ == '__main__':
 
     data = load_file(RAWFILES.TOTAL_DATASET)
     subset, notsubset = remove_all_bk(data)
-    
+    print(f'Accepted {len(subset)} events ({len(subset) / len(data) * 100:.4g}%)')

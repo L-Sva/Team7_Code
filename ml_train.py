@@ -34,7 +34,7 @@ def ml_train_validate_peaking(**hyperparams):
 
 
 def ml_train_validate(train_data, validate_data, **hyperparams):
-    if remove_q2_first:
+    if REMOVE_Q2_FIRST:
         train_data, _ = q2_resonances(train_data)
         validate_data, _ = q2_resonances(validate_data)
     
@@ -60,6 +60,8 @@ def ml_train_validate(train_data, validate_data, **hyperparams):
     MODEL_FILE_NAME = 'peaking_sb_{}_'.format(bestSb)
     if TRAIN_COMB_BK:
         MODEL_FILE_NAME = 'comb_sb_{}_'.format(bestSb)
+    if REMOVE_Q2_FIRST:
+        MODEL_FILE_NAME += 'noQ2_'
     for i in hyperparams:
         MODEL_FILE_NAME = MODEL_FILE_NAME + str(i) +'_'+ str(hyperparams[i]) +'_'
     MODEL_FILE_NAME = MODEL_FILE_NAME + '.model'
