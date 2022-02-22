@@ -16,6 +16,63 @@ In order to import and run the machine learning selector, use the code
     subset, notsubset = remove_all_bk(data)
 ```
 
+## File descriptions
+```
+    acceptance_func_parameters
+
+    data
+        Raw data files as give by Mitesh
+    data_combinatorial_background_sample_histograms
+        Histograms showing the properties of the data selected for ML training 
+        on the combinatorial background
+    data_histograms
+        Histograms of total_dataset vs. signal
+    data_histograms_with_jpsi
+        Histograms of total_dataset vs. signal vs. jpsi
+    ES_functions
+        Manual selector functions
+    ml_models
+        Saved machine learning models
+    optimisation_models_comb
+        Saved machine learning models from hyperparameter optimisation for 
+        combinatorial background
+    optimisation_models_peaking
+        Saved machine learning models from hyperparameter optimisation for 
+        peaking background
+    _ml_histograms_on_total
+        Histograms of main ML selector run on total_dataset
+    _ml_hist_individual_bks
+        Histograms of main ML selector run on individual backgrounds
+    acceptance_plot_tool.py
+        Plots histograms in the angular quantities
+    binning.py
+        Binning for ???
+    core.py
+        Code to load raw data
+    example_combining_arbitrary_selectors.py
+        Code to combine N selectors of choice
+    example_of_using_core.py
+        duh
+    histrogram_plots.py
+        Code to make histogram plots
+    ml_bivariant_example.py
+        Simple illustrative example of benefit of ML as a multivariate method
+    ml_combinatorial_extraction.py
+        Code for loading combinatorial background training data
+    ml_count_bk_in_total.py
+        Code for estimating remaining peaking background events after main ML 
+        selector
+    ml_recreate.py
+
+    ml_selector.py
+    ml_tools.py
+    ml_train.py
+    selection_cuts_hist.py
+    starter_notebook-Copy1.ipynb
+    starter_notebook.ipynb
+    Summed_dataset2d_ratio_Legendre_polinomial.py
+    test_candidates_example.py
+```
 ## Running on college PC in console (using Anaconda on apps anywhere):
 
 - Copy the project to somewhere on H: drive
