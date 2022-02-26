@@ -95,12 +95,12 @@ def d2gamma_withAcceptance_normalised(ctl, fl, afb):
     for i in range(0, 10):  # iterate over all bins
         dummy, dummy_err =  integrate.dblquad(d2gamma, q2bins[i][0], q2bins[i][1], ctl_lower, ctl_higher, args=(fl, afb))
         gamma += dummy
-    print(gamma)
+    # print(gamma)
 
     # step2: integrate d2gamma * acceptance
     gamma_withAcceptance = 0
     for i in range(0,10):
-        dummy, dummy_err = integrate.dblquad(d2gamma_withAcceptance,  q2bins[0][0], q2bins[0][1], ctl_lower, ctl_higher, args=(fl, afb))
+        dummy, dummy_err = integrate.dblquad(d2gamma_withAcceptance,  q2bins[i][0], q2bins[i][1], ctl_lower, ctl_higher, args=(fl, afb))
         gamma_withAcceptance += dummy
     # print(gamma_withAcceptance)
 
