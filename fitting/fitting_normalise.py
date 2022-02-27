@@ -14,7 +14,7 @@ from functions import q2_binned, acceptance_function, q2bins, rescale_q2
 # ==================================================
 
 
-
+'''
 def ctl_finder( _bin ):
 
     # extracted from .../fitting/main.py
@@ -30,8 +30,10 @@ def ctl_finder( _bin ):
     ctl = _bin['costhetal'].to_numpy()
 
     return ctl
+'''
 
-def d2gamma(ctl, q2, fl, afb):
+
+def d2gamma(ctl, fl, afb):
     '''
     returns:
             d2gamma (not normalised)
@@ -42,7 +44,7 @@ def d2gamma(ctl, q2, fl, afb):
 
     return scalar_array
 
-def d2gamma_withAcceptance(ctl, q2, fl, afb):
+def d2gamma_withAcceptance(ctl, fl, afb):
     """
     returns:
             d2gamma * acceptance function (not normalised)
@@ -67,47 +69,42 @@ def d2gamma_withAcceptance(ctl, q2, fl, afb):
 
 def d2gamma_withAcceptance_normalised(ctl, fl, afb):
     '''
+    inputs:
+        ctl - array, len = 10
+        fl - array, len = 10
+        afb - arry, len = 10
     returns:
             d2gamma* acceptance (normalised)
     '''
+
     # step0: set integral limits
-    # cos_theta_l - integral boundary: -1 to 1
-    ctl_lower = -1 # change this afterwards if related to "ctl" value of each bin
+    ctl_lower = -1
     ctl_higher = 1
 
-    # q2 - integral limits
-    q2bins = np.array(
-        [[0.1, 0.98],
-         [1.1, 2.5],
-         [2.5, 4.0],
-         [4.0, 6.0],
-         [6.0, 8.0],
-         [15.0, 17.0],
-         [17.0, 19.0],
-         [11.0, 12.5],
-         [1.0, 6.0],
-         [15.0, 17.9]]
-    )
-
-
-    # step1: integrate d2gamma
-    gamma = 0
-    for i in range(0, 10):  # iterate over all bins
-        dummy, dummy_err =  integrate.dblquad(d2gamma, q2bins[i][0], q2bins[i][1], ctl_lower, ctl_higher, args=(fl, afb))
-        gamma += dummy
-    # print(gamma)
-
-    # step2: integrate d2gamma * acceptance
-    gamma_withAcceptance = 0
+    # step1: integrate d2gamma (wrt ctl)
+    gamma = []
     for i in range(0,10):
-        dummy, dummy_err = integrate.dblquad(d2gamma_withAcceptance,  q2bins[i][0], q2bins[i][1], ctl_lower, ctl_higher, args=(fl, afb))
-        gamma_withAcceptance += dummy
+        dummy, dummy_err = integrate.quad(d2gamma, ctl_lower, ctl_higher, args = (fl[i], afb[i]))
+        gamma.append(dummy)
+    # print(gamma) # result = [1]*10 as expected
+
+
+    # step2: integrate d2gamma * acceptance (wrt ctl)
+    gamma_withAcceptance = []
+    for i in range(0,10):
+        dummy, dummy_err = integrate.quad(d2gamma_withAcceptance, ctl_lower, ctl_higher, args = (fl[i], afb[i]))
+        gamma_withAcceptance.append(dummy)
     # print(gamma_withAcceptance)
 
-    # step3: normalisation
+    # step3: normalisation of d2gamma_withAcceptance
+    result = []
+    factor = 0
+    for i in range(0, 10):
+        factor = 1.0/gamma_withAcceptance[i]  #normalisation factor for each bin
+        # print(gamma_withAcceptance[i] * factor) # check if normalised to 1
+        result.append(d2gamma_withAcceptance(ctl[i], fl[i], afb[i])[0][0] * factor)
 
-    # step4: return "normalised d2gamma_withAcceptance" value with ctl, fl, afb given
-    return
+    return result
 
 
 
@@ -118,7 +115,13 @@ def d2gamma_withAcceptance_normalised(ctl, fl, afb):
 # _test_ctl = ctl_finder(_test_bin)  # question: why 100+ ctl values for each bin??
 
 _test_ctl = [-0.33578466]* 10
-_test_afb = 0.7
-_test_fl = 0.0
+_test_afb = [-0.0970515604684916, -0.13798671499985016, -0.017385033593575933,
+0.12215506287920677, 0.23993949201268056, 0.4019144709381388,
+0.3183907920796311, 0.3913899537158143, 0.0049291176692496394,
+0.3676716852255129]
+_test_fl = [0.2964476598667644, 0.7603956395622157, 0.7962654932624427,
+0.7112903962261427, 0.6069651454293227, 0.3484407559729121,
+0.32808100221720543, 0.4351903815658659, 0.7476437141490421,
+0.34015604925198045]
 
 d2gamma_withAcceptance_normalised(_test_ctl, _test_fl, _test_afb)
