@@ -19,6 +19,21 @@ q2bins = np.array(
 )
 
 def q2_binned(df):
+    """
+    Bin a given dataframe into q² bins.
+
+    Parameters
+    ----------
+    df : dataframe/numpy array
+        dataset to split into q² bins
+
+    Returns
+    -------
+    dictionary
+        with keys from 0..9, corresponding to the q² bins given in the TBPS
+        website, also contains i1,i2,i3,i4, which are 'invalid' bins
+    """
+
     # bins ordered different, because np.histogram needs a
     # monotonically increasing array
     q2_bins_0 = [0.1, 0.98, 1.1, 2.5, 4, 6, 8, 15, 17, 19]
@@ -49,14 +64,14 @@ def calc_ctl_bins(acceptance_func_dfs, q2_eval, ctl_percentile):
     af_q2_eval = dict(tuple(acceptance_func_dfs.groupby(eval_binned)))
 
     ctl_inner_bins = [
-        np.percentile(af_q2_eval[q2_bins]['costhetal'], ctl_percentile) 
+        np.percentile(af_q2_eval[q2_bins]['costhetal'], ctl_percentile)
         for q2_bins in af_q2_eval
     ]
 
     ctl_inner_bins = np.asarray(ctl_inner_bins)
     ones_column = np.ones((ctl_inner_bins.shape[0], 1))
     ctl_bins = np.hstack((-ones_column, ctl_inner_bins, ones_column))
-    
+
     return ctl_bins
 
 def calc_ebins_cnt(df, q2_eval, ctl_bins):
@@ -69,7 +84,7 @@ def calc_ebins_cnt(df, q2_eval, ctl_bins):
     df_cnt = np.array([np.histogram(
         df_ebins[f'e{bin_no}']['costhetal'], bins=ctl_bins[bin_no])[0]
         for bin_no in range(len(q2_eval)-1)])
-        
+
     return df_cnt
 
 def rescale_q2(q2_array):
@@ -84,6 +99,25 @@ def make_Leg(poly_degree):
     return P
 
 def acceptance_function(q2, ctl, params_dict):
+    '''
+    Continuous acceptance function.
+
+    Parameters
+    ----------
+    q2 : int/float/1D array
+        q² values to evaluate the acceptance function at
+    ctl : int/float/1D array
+        cos(θ_l) values to evaluate the acceptance function at
+    params_dict : dict
+        dictionary containing required parameter values (P and c)
+
+    Returns
+    -------
+    2D array, with shape len(q2)xlen(ctl)
+        where each row corresponds to an input q² value and each column to
+        a cos(θ_l) value
+    '''
+
     # extract required values from params_dict
     P = params_dict['P']
     c = params_dict['c']
@@ -91,7 +125,7 @@ def acceptance_function(q2, ctl, params_dict):
     # anyway, so we just use c's shape
     i_range = c.shape[0]
     j_range = c.shape[1]
-    
+
     q2 = np.reshape(q2, (1, -1))
     ctl = np.reshape(ctl, (1, -1))
 
