@@ -30,6 +30,20 @@ params_dict = {
     # order of Legendre polynomial to fit to
     'i_range': 5,
     'j_range': 4,
+
+    # Cos theta l bins for calculating the acceptance function
+    'ctl_bins': None,
+
+    # Mid points of bins
+    'eq2_mid': None,
+    'ctl_mid': None,
+
+    # Discrete acceptance function
+    'acceptance_func_discrete': None,
+
+    # Acceptance function
+    'P': None,
+    'c': None,
 }
 
 
