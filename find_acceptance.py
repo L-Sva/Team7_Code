@@ -7,10 +7,10 @@ import matplotlib.pyplot as plt
 import pickle
 import os
 
-from Team7_Code.core import load_file, RAWFILES
-from Team7_Code.ES_functions.Compiled import selection_all
+from core import load_file, RAWFILES
+from ES_functions.Compiled import selection_all
 
-from functions import calc_ctl_bins, calc_ebins_cnt, make_Leg, \
+from fitting.functions import calc_ctl_bins, calc_ebins_cnt, make_Leg, \
 acceptance_function, rescale_q2
 
 plt.rcParams['font.size'] = 18
