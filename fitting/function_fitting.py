@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.integrate import quad
 
-from functions import acceptance_function, q2bins, rescale_q2
+from .functions import acceptance_function, q2bins, rescale_q2
 
 def raw_d2(ctl, fl, afb, _bin, q_norm, params_dict):
     c2tl = 2 * ctl ** 2 - 1
