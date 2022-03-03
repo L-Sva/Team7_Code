@@ -18,9 +18,10 @@ def d2gamma_p_d2q2_dcostheta(fl, afb, ctl, _bin, q_norm, params_dict):
     :param cos_theta_l: cos(theta_l)
     """
     # normalise array to account for the non-unity acceptance function
-    normalised_scalar_array = raw_d2(
-        ctl, fl, afb, _bin, q_norm, params_dict).squeeze() / \
-    quad(raw_d2, -1, 1, args = (fl, afb, _bin, q_norm, params_dict))[0]
+    normalised_scalar_array = (
+        raw_d2(ctl, fl, afb, _bin, q_norm, params_dict).squeeze() /
+        quad(raw_d2, -1, 1, args = (fl, afb, _bin, q_norm, params_dict))[0]
+    )
 
     return normalised_scalar_array
 
