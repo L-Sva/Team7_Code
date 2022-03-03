@@ -16,10 +16,6 @@ if __name__=='__main__':
     with open('tmp/acceptance_coeff.pkl', 'rb') as f:
         params_dict = pickle.load(f)
 
-    # q² bins to evaluate the acceptance function at
-    q2_bins_mid = (q2bins[:,:-1]+q2bins[:,1:])/2
-    q0_norm = rescale_q2(q2_bins_mid).flatten()
-
     raw_total = load_file(RAWFILES.TOTAL_DATASET)
     filtered_total, _ = selection_all(raw_total)
 
@@ -27,7 +23,7 @@ if __name__=='__main__':
 
     # so that I don't have to change all the code below
     df_log_likelihood = partial(
-        log_likelihood, q2_filtered, q0_norm, params_dict)
+        log_likelihood, q2_filtered, params_dict)
 
     _test_bin = 1
 

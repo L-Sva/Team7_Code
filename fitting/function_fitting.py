@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.integrate import quad
 
-from functions import acceptance_function
+from functions import acceptance_function, q2bins, rescale_q2
 
 def raw_d2(ctl, fl, afb, _bin, q_norm, params_dict):
     c2tl = 2 * ctl ** 2 - 1
@@ -24,7 +24,7 @@ def d2gamma_p_d2q2_dcostheta(fl, afb, ctl, _bin, q_norm, params_dict):
 
     return normalised_scalar_array
 
-def log_likelihood(df, q_norm, params_dict, fl, afb, _bin):
+def log_likelihood(df, params_dict, fl, afb, _bin):
     """
     Returns the negative log-likelihood of the pdf defined above
     :param df: q² binned dataset
@@ -37,7 +37,10 @@ def log_likelihood(df, q_norm, params_dict, fl, afb, _bin):
     :param afb: a_fb observable
     :param _bin: number of the bin to fit
     """
-
+    
+    q2_bins_mid = (q2bins[:,:-1]+q2bins[:,1:])/2
+    q_norm = rescale_q2(q2_bins_mid).flatten()
+        
     _bin = int(_bin) # make sure index is an integer
 
     bin_data = df[str(_bin)]
