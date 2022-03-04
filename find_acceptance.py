@@ -7,10 +7,10 @@ import matplotlib.pyplot as plt
 import pickle
 import os
 
-from Team7_Code.core import load_file, RAWFILES
-from Team7_Code.ES_functions.Compiled import selection_all
+from core import load_file, RAWFILES
+from ES_functions.Compiled import selection_all
 
-from functions import calc_ctl_bins, calc_ebins_cnt, make_Leg, \
+from fitting.functions import calc_ctl_bins, calc_ebins_cnt, make_Leg, \
 acceptance_function, rescale_q2
 
 plt.rcParams['font.size'] = 18
@@ -30,6 +30,20 @@ params_dict = {
     # order of Legendre polynomial to fit to
     'i_range': 5,
     'j_range': 4,
+
+    # Cos theta l bins for calculating the acceptance function
+    'ctl_bins': None,
+
+    # Mid points of bins
+    'eq2_mid': None,
+    'ctl_mid': None,
+
+    # Discrete acceptance function
+    'acceptance_func_discrete': None,
+
+    # Acceptance function
+    'P': None,
+    'c': None,
 }
 
 

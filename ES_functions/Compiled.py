@@ -134,7 +134,7 @@ def selection_all(dataframe, B0_vertex_prob_threshold=0.1, \
         B0_FD_threshold=4., DIRA_threshold=0.9994):
 
     yes_PID, no_PID = Particle_ID(dataframe)
-    print('Particle ID done')
+    
     yes_q2, no_q2 = q2_resonances(yes_PID)
     
     yes_Kstar_mass, no_Kstar_mass = Kstar_inv_mass(yes_q2)
