@@ -6,7 +6,7 @@ from core import load_file
 
 # Requires all .pkl files provided to be placed in /data/
 
-def plot_hist_quantity(df,column,bins=100,range=None,label=None):
+def plot_hist_quantity(df,column,bins=100,range=None,label=None,color='black'):
     # Prevents exception being thrown for 'year' column
     if df[column].dtype != 'object':
 
@@ -23,12 +23,12 @@ def plot_hist_quantity(df,column,bins=100,range=None,label=None):
                 # Need to use this to get correct sized errorbars on a histogram with density=True
                 # yerr = 0 for h = 0
                 yerr= yerr,
-                xerr=half_binwidths, capsize=3, ls='', label=label)
+                xerr=half_binwidths, capsize=3, ls='', label=label, color=color)
         plt.xlabel(column)
         plt.ylabel('Probability density')
         plt.xlim(bins[0], bins[-1])
 
-        return bins, h
+        return bins, h, h_density
     else:
         warnings.warn(f'Cannot plot column {column}, as it has dtype of `object`')
 
