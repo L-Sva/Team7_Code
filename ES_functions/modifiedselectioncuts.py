@@ -53,6 +53,13 @@ def q2_resonances(data):
     not_subset = data[crit_a | crit_b] # crit_a or crit_b
     return subset, not_subset
 
+def q2_range(dataframe):
+    q2 = dataframe['q2']
+    crit = (q2 >= 0.1) & (q2 <= 19.0)
+    subset = dataframe[crit] 
+    not_subset = dataframe[~crit]
+    return subset, not_subset
+    
 def K0_vertex_chi2(dataframe):
     dataframe = dataframe.reset_index(drop = True)
     threshold = 8 * dataframe["Kstar_ENDVERTEX_NDOF"][0]
@@ -318,7 +325,9 @@ def selection_all(dataframe, \
     
     yes_q2, no_q2 = q2_resonances(yes_PID)
     
-    yes_Kstar_mass, no_Kstar_mass = Kstar_inv_mass(yes_q2)
+    yes_q2range, no_q2range = q2_range(yes_q2)
+    
+    yes_Kstar_mass, no_Kstar_mass = Kstar_inv_mass(yes_q2range)
     
     yes_B0_vertex, no_B0_vertex = B0_vertex_chi2(yes_Kstar_mass)
     
@@ -352,7 +361,7 @@ def selection_all(dataframe, \
     
     yes_pb8, no_pb8 = peaking_back_8(yes_pb7)
    
-    no = [no_q2, no_Kstar_mass, no_B0_vertex, no_B0_IP, no_fs_IP, no_FD, 
+    no = [no_q2, no_q2range, no_Kstar_mass, no_B0_vertex, no_B0_IP, no_fs_IP, no_FD, 
           no_DIRA, no_KOV, no_KFD, no_b0_mass, no_pb1, no_pb2, no_pb3, no_pb4, no_pb5, no_pb6, no_pb7, no_pb8]
     not_subset = pd.concat(no)
     subset = yes_pb8
