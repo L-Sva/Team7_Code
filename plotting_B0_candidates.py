@@ -39,21 +39,33 @@ filtered_total, _ = selection_all(raw_total)
 
 q2_filtered = q2_binned(filtered_total)
 #%%
-bin_no=40
+
+#determine number of bins to plot for in each range
+#literature has 100 bins in 5150-5700 MeV/c^2
+bin_widths=(5700-5150)/100
+bin_no=[]
+
+for i in range(10):
+    d_range=max(q2_filtered[f'{i}']['B0_MM'])-min(q2_filtered[f'{i}']['B0_MM'])
+    bin_no_per=d_range/bin_widths
+    bin_no.append(bin_no_per)
+
+bin_no=[round(i) for i in bin_no]
+#%%
 bins=[]
 h=[]
 for i in range(10):
     plt.figure(i)
-    bin1, _, h1 = plot_hist_quantity(q2_filtered[f'{i}'],column='B0_MM',bins=bin_no)
+    bin1, _, h1 = plot_hist_quantity(q2_filtered[f'{i}'],column='B0_MM',bins=bin_no[i])
     bins.append(bin1)
     h.append(h1)
-    plt.close()
+    # plt.close()
 
 bin_mids=[]
 for j in range(10):
     bin_mid=[(bins[j][i]+bins[j][i+1])/2 for i in range(len(bins[j])-1)]
     bin_mids.append(bin_mid)
-bin_mids=np.array(bin_mids)
+bin_mids=np.asarray(bin_mids,dtype=object)
 #%%
 
 for num in range(10):
@@ -112,10 +124,10 @@ for num in range(10):
     plt.figure(num)
     plt.plot(x,y,color='black')
     plt.fill_between(x,yzero,yexp)
-    plot_hist_quantity(q2_filtered[f'{num}'],column='B0_MM',bins=bin_no)
+    plot_hist_quantity(q2_filtered[f'{num}'],column='B0_MM',bins=bin_no[num])
     plt.title(f'{q2bins[num][0]} < q^2 < {q2bins[num][1]}')
     plt.xlabel('B0_MM (MeV/c^2)')
     plt.show()
-    plt.savefig(f'B0_graphs/{q2bins[num][0]}-{q2bins[num][1]}.png', dpi=500)
+    plt.savefig(f'B0_graphs_fixed_bin_widths/{q2bins[num][0]}-{q2bins[num][1]}.png', dpi=500)
     plt.close()
     print(np.round(vals2,decimals=2))
