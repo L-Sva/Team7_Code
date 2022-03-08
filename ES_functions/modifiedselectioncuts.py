@@ -368,6 +368,55 @@ def selection_all(dataframe, \
 
     return subset, not_subset
 
+#%%
+def selection_all_withoutres(dataframe, \
+    final_particle_prob_threshold = 9., B0_IP_chi2_threshold=16, \
+        B0_FD_threshold=121, DIRA_threshold=0.9999, ):
+
+    yes_PID, no_PID = Particle_ID(dataframe)
+    
+    yes_q2range, no_q2range = q2_range(yes_PID)
+    
+    yes_Kstar_mass, no_Kstar_mass = Kstar_inv_mass(yes_q2range)
+    
+    yes_B0_vertex, no_B0_vertex = B0_vertex_chi2(yes_Kstar_mass)
+    
+    yes_B0_IP, no_B0_IP = B0_IP_chi2(yes_B0_vertex, B0_IP_chi2_threshold)
+    
+    yes_fs_IP, no_fs_IP = final_state_particle_IP(yes_B0_IP, final_particle_prob_threshold)
+    
+    yes_FD, no_FD = FD(yes_fs_IP, B0_FD_threshold)
+    
+    yes_DIRA, no_DIRA = DIRA(yes_FD, DIRA_threshold)
+    
+    yes_KOV, no_KOV = K0_vertex_chi2(yes_DIRA)
+    
+    yes_KFD, no_KFD = KSTAR_FD(yes_KOV)
+    
+    yes_b0_mass, no_b0_mass = B0_mass(yes_KFD)
+    
+    yes_pb1, no_pb1 = peaking_back_1(yes_b0_mass)
+    
+    yes_pb2, no_pb2 = peaking_back_2(yes_pb1)
+    
+    yes_pb3, no_pb3 = peaking_back_3(yes_pb2)
+    
+    yes_pb4, no_pb4 = peaking_back_4(yes_pb3)
+    
+    yes_pb5, no_pb5 = peaking_back_5(yes_pb4)
+    
+    yes_pb6, no_pb6 = peaking_back_6(yes_pb5)
+    
+    yes_pb7, no_pb7 = peaking_back_7(yes_pb6)
+    
+    yes_pb8, no_pb8 = peaking_back_8(yes_pb7)
+   
+    no = [no_q2range, no_Kstar_mass, no_B0_vertex, no_B0_IP, no_fs_IP, no_FD, 
+          no_DIRA, no_KOV, no_KFD, no_b0_mass, no_pb1, no_pb2, no_pb3, no_pb4, no_pb5, no_pb6, no_pb7, no_pb8]
+    not_subset = pd.concat(no)
+    subset = yes_pb8
+
+    return subset, not_subset
 # %% Test
 
 # L_1 = ['mu_plus_MC15TuneV1_ProbNNmu', 'mu_minus_MC15TuneV1_ProbNNmu', 
@@ -375,27 +424,29 @@ def selection_all(dataframe, \
 # L_2 = ['mu_plus_MC15TuneV1_ProbNNpi', 'mu_minus_MC15TuneV1_ProbNNpi', 
 #        'K_MC15TuneV1_ProbNNpi', 'Pi_MC15TuneV1_ProbNNpi']
 #%%
-if __name__ == "__main__":
-    selected, not_selected = selection_all(dataframe)
-    print(len(selected), len(not_selected))
-
-#%%
-
-
-no_init = []
-no_final = []
-
-for i in range(len(pickle_files)):
-    data = pd.read_pickle(pickle_files[i])
-    no_init.append(  len(data) )
-    selected, not_selected = selection_all(data)
-    no_final.append(len(selected))
-
-
-for i in range(len(pickle_files)):
-    print("In %s, there were %g events of which %g survived" % 
-      (pickle_files[i], no_init[i], no_final[i]) )
-    
+# =============================================================================
+# if __name__ == "__main__":
+#     selected, not_selected = selection_all(dataframe)
+#     print(len(selected), len(not_selected))
+# 
+# #%%
+# 
+# 
+# no_init = []
+# no_final = []
+# 
+# for i in range(len(pickle_files)):
+#     data = pd.read_pickle(pickle_files[i])
+#     no_init.append(  len(data) )
+#     selected, not_selected = selection_all(data)
+#     no_final.append(len(selected))
+# 
+# 
+# for i in range(len(pickle_files)):
+#     print("In %s, there were %g events of which %g survived" % 
+#       (pickle_files[i], no_init[i], no_final[i]) )
+#     
+# =============================================================================
     
     
     
