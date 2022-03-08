@@ -10,197 +10,154 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import pickle
-import os
+from pathlib import Path
 from scipy.special import legendre
 
-# from Team7_Code.core import load_file, RAWFILES
-# from Team7_Code.ES_functions.Compiled import selection_all
-
-from modifiedselectioncuts import *
+from modifiedselectioncuts import selection_all
 from ml_selector import remove_combinatorial_background
 
-from functions import calc_ctl_bins, calc_ebins_cnt, make_Leg, \
-acceptance_function, rescale_q2
-
-#%%
-dataframe = pd.read_pickle("Data/acceptance_mc.pkl")
-
-dataframe,_ = selection_all(dataframe)
-
-dataframe = remove_combinatorial_background(dataframe)
-
-###
-### Will add ML later
-###
-
 plt.rcParams['font.size'] = 18
-#%%
+
+Path('../tmp/').mkdir(exist_ok=True)
 
 def P_l(n, x):
     coeff = legendre(n)
-    poly = np.zeros(x.shape)
-    for i in range(n+1):
-        poly += coeff[i] * x**i
-    return poly
-          
+    p = np.poly1d(coeff)
+    return p(x)
 
-def acceptance_function_2(q2, ctl, ctk, phi, coeff):
-    q2 = (q2-9.55)/9.45
-    phi = phi/np.pi - 1
-    acc_func = np.zeros(coeff.shape)
+def acceptance_function(q2, ctl, ctk, phi, coeff_q2range):
+    coeff, qrange = coeff_q2range
+    q2min = qrange[0]
+    q2max = qrange[1]
+    q2 = 2 * (np.array(dataframe["q2"]) - (q2max + q2min) / 2)/ (q2max - q2min)
+    phi = phi/np.pi
     x,y,z,w = np.meshgrid(q2, ctl, ctk, phi)
-    i_max, j_max, l_max, k_max = coeff.shape
-    for i in range(i_max-1):
-        for j in range(j_max-1):
-            for k in range(k_max-1):
-                for l in range(l_max-1):
-                    acc_func += coeff[i,j,k,l] * P_l(i,x) * P_l(j,y) * P_l(k, z) * P_l(l, w)
+    acc_func = np.zeros(x.shape)
+    i_max, j_max, k_max, l_max = coeff.shape
+    for i in range(i_max):
+        for j in range(j_max):
+            for k in range(k_max):
+                for l in range(l_max):
+                    acc_func += coeff[i,j,k,l] * P_l(i, x) * P_l(j, y) * P_l(k, z) * P_l(l, w)
     return acc_func
 
-  
-def coeff(dataframe):
+def coeff_q2range(dataframe, q2min, q2max):
+    q2 = dataframe['q2']
+    crit_a = (q2 >= q2min) & (q2 <= q2max)
+    dataframe = dataframe[crit_a]
     N = len(dataframe)
-    q2 = rescale_q2(np.array(dataframe["q2"]))
+    q2 = 2 * (np.array(dataframe["q2"]) - (q2max + q2min) / 2)/ (q2max - q2min)
     ctl = np.array(dataframe["costhetal"])
     ctk = np.array(dataframe["costhetak"])
-    phi = (np.array(dataframe["phi"]))/np.pi - 1
-    c = np.zeros(shape = (6, 5, 6, 7))
-    for i in range(6):
-        for j in range(5):
-            for k in range(6):
-                for l in range(7):
-                    c[i,j,k,l] = 1/(16 * N) * (2 * i + 1) * (2 * j + 1) * (2 * k + 1) * \
-                        (2 * l + 1) * sum( P_l(i, q2) * P_l(j, ctl) * P_l(k, ctk) * \
-                                          P_l(l, phi) )
-    return c
-                    
+    phi = (np.array(dataframe["phi"]))/np.pi 
+    shape = (6, 5, 6, 7)
+    c = np.zeros(shape)
+    for i in range(shape[0]):
+        for j in range(shape[1]):
+            for k in range(shape[2]):
+                for l in range(shape[3]):
+                    c[i,j,k,l] = 1/(16 * N) * (2 * i + 1) * (2 * j + 1) * (2 * k + 1) * (2 * l + 1) * sum( P_l(i, q2) * P_l(j, ctl) * P_l(k, ctk) * P_l(l, phi) )
+    return c, q2min, q2max
+
 #%%
+# filter acceptance_mc
+dataframe = pd.read_pickle("data/acceptance_mc.pkl")
+dataframe, _ = selection_all(dataframe)
+dataframe, _ = remove_combinatorial_background(dataframe)
+dataframe.to_pickle('../tmp/filtered_acc.pkl')
 
-c = coeff(dataframe)
-
-acc_func = acceptance_function_2(2, 0.5, 0.5, 0.5, c)
-    
 #%%
-# params_dict contains both user-set and calculated values,
-# which are used later on in code
+dataframe = pd.read_pickle('../tmp/filtered_acc.pkl')
 
-params_dict = {
-    # q² bins for calculating the continuous fitting function
-    'q2_eval': np.array(
-        [0.1, 0.98, 1.1, 2.5, 4, 6, 8, 10, 12, 14, 15, 17, 19]),
-    
-    # percentiles to find ctl (inner) boundaries at
-    'ctl_percentile': np.arange(10, 100, 10),
-    
-    # order of Legendre polynomial to fit to
-    'i_range': 5,
-    'j_range': 4,
-}
+#%%
+c, c_q2min, c_q2max = coeff_q2range(dataframe, 0.1, 8)
+np.save('../tmp/coeff.npy', c)
 
+#%%
+c_q2min, c_q2max = 0.1, 8
+c = np.load('../tmp/coeff.npy')
 
-'''
-# make folder called tmp
-# this will be used to store intermediary variables
-os.makedirs(os.path.dirname('./tmp/'), exist_ok=True)
-# load required dataframes
-acceptance = load_file(RAWFILES.ACCEPTANCE)
-summed_dataset = pd.concat([
-    *[load_file(file_name) for file_name in RAWFILES.peaking_bks],
-    load_file(RAWFILES.SIGNAL)
-]) # all signal + peaking in one dataframe
-raw_signal = load_file(RAWFILES.SIGNAL)
-filtered_summed, _ = selection_all(summed_dataset)
-# save the above variables to avoid re-calculating and faster loading
-with open('tmp/af_dfs.pkl', 'wb') as acceptance_params:
-    pickle.dump([acceptance, filtered_summed, raw_signal], acceptance_params)
-'''
+#All the following are testing
+#%%
+q2 = dataframe['q2']
+crit_a = (q2 >= c_q2min) & (q2 <= c_q2max)
+dataframe = dataframe[crit_a]
 
-'''
-## Checkpoint 1
-with open('tmp/af_dfs.pkl', 'rb') as acceptance_params:
-    acceptance, filtered_summed, raw_signal = pickle.load(acceptance_params)
-acceptance_func_dfs = pd.concat([acceptance, filtered_summed, raw_signal])
-ctl_bins = calc_ctl_bins(
-    acceptance_func_dfs, params_dict['q2_eval'], params_dict['ctl_percentile'])
-params_dict['ctl_bins'] = ctl_bins
-# ebins = q² bins used for evaluating the acceptance function, not to be
-# confused with the bins given in the 'SM Table' on the TBPS website
-acc_cnt = calc_ebins_cnt(
-    acceptance, params_dict['q2_eval'], params_dict['ctl_bins'])
-fil_cnt = calc_ebins_cnt(
-    filtered_summed, params_dict['q2_eval'], params_dict['ctl_bins'])
-sig_cnt = calc_ebins_cnt(
-    raw_signal, params_dict['q2_eval'], params_dict['ctl_bins'])
-# discrete acceptance function
-acceptance_func_discrete = acc_cnt * fil_cnt/sig_cnt
-params_dict['acceptance_func_discrete'] = acceptance_func_discrete
-with open('tmp/bins_counts.pkl', 'wb') as f:
-    pickle.dump(params_dict, f)
-'''
+#%% check q2
+bins = plt.hist(dataframe["q2"], bins = 100)[0]
 
-'''
-## Checkpoint 2
-with open('tmp/bins_counts.pkl', 'rb') as f:
-    params_dict = pickle.load(f)
-# prep eq2 to use in eqn 5
-# normalise q2_eval to range [-1, 1]:
-eq2_normal = rescale_q2(params_dict['q2_eval'])
-eq2_mid = (eq2_normal[:-1]+eq2_normal[1:])/2 # midpoint of q² bins
-eq2_bw = np.diff(eq2_normal)
-params_dict['eq2_mid'] = eq2_mid
-# prep ctl to use in eqn 5
-ctl_normal = params_dict['ctl_bins']
-ctl_mid = (ctl_normal[:,:-1]+ctl_normal[:,1:])/2
-ctl_bw = np.diff(ctl_normal)
-params_dict['ctl_mid'] = ctl_mid
-# list of Legendre polynomials
-P = make_Leg(max(params_dict['i_range'], params_dict['j_range']))
-params_dict['P'] = P
-# c will store coefficients
-c = np.zeros([params_dict['i_range'], params_dict['j_range']])
-for i in range(params_dict['i_range']):
-    for j in range(params_dict['j_range']):
-        c[i, j] = (2*i+1)/2 * (2*j+1)/2 * (
-            (eq2_bw*P[i](eq2_mid))[:,None] *
-            ctl_bw*P[j](ctl_mid) *
-            params_dict['acceptance_func_discrete']
-        ).sum()
-params_dict['c'] = c
-with open('tmp/acceptance_coeff.pkl', 'wb') as f:
-    pickle.dump(params_dict, f)
-'''
+q2_range = np.linspace(0.1, 8, 1000)
+def func(q2, q2min, q2max):
+    q2 = 2 * (q2 - (q2max + q2min) / 2)/ (q2max - q2min)
+    num = 0
+    for i in range(len(c)):
+        num += P_l(i, q2) * c[i, 0, 0, 0]
+    return num
+acc = [func(i, 0.1, 8) for i in q2_range]
+plt.plot(q2_range, np.array(acc)* bins[0] / func(0.1, 0.1, 8)*0.95 )
+params={
+   'axes.labelsize': 30,
+   'font.size': 30,
+   'legend.fontsize': 30,
+   'xtick.labelsize': 30,
+   'ytick.labelsize': 30,
+   'figure.figsize': [16, 9]
+   } 
+plt.rcParams.update(params)
+plt.xlabel('q2')
+plt.ylabel('Counts')
+plt.legend(['Acceptance Function', 'Filtered acceptance_mc'])
+plt.show()
 
+#%% check ctl
 
-## Checkpoint 3
-with open('tmp/acceptance_coeff.pkl', 'rb') as f:
-    params_dict = pickle.load(f)
+ctl_bins = plt.hist(dataframe["costhetal"], bins = 100)[0]
 
-# used to plot continuous acceptance function
-q2_range, ctl_range = np.ogrid[-1:1:100j, -1:1:100j]
+ctl_range = np.linspace(-1, 1, 1000)
+def func2(ctl):
+    num = 0
+    for i in range(len(c[0])):
+        num += P_l(i, ctl) * c[0, i, 0, 0]
+    return num
+acc = np.array([func2(i) for i in ctl_range])
+plt.plot(ctl_range, acc * ctl_bins[0] / func2(-1)*0.9)
+plt.xlabel('ctl')
+plt.ylabel('Counts')
+plt.legend(['Acceptance Function', 'Filtered acceptance_mc'])
+plt.show()
+plt.show()
 
-a = acceptance_function(q2_range, ctl_range, params_dict)
+#%% check ctk
+ctk_bins = plt.hist((dataframe)["costhetak"], bins = 100)[0]
 
-fig, ax = plt.subplots(
-    subplot_kw={'projection': '3d'}, constrained_layout=True)
+ctk_range = np.linspace(-1, 1, 1000)
+def func3(ctk):
+    num = 0
+    for i in range(len(c[0, 0])):
+        num += P_l(i, ctk) * c[0, 0, i, 0]
+    return num
+acc = np.array([func3(i) for i in ctk_range])
+plt.plot(ctk_range, acc * ctk_bins[0] / func3(-1))
+plt.xlabel('ctk')
+plt.ylabel('Counts')
+plt.legend(['Acceptance Function', 'Filtered acceptance_mc'])
+plt.show()
+plt.show()
 
-# loop and plot actual values
-for row in range(params_dict['ctl_mid'].shape[0]):
-    ax.scatter(
-        params_dict['eq2_mid'][row], params_dict['ctl_mid'][row],
-        params_dict['acceptance_func_discrete'][row]
-    )
+#%% check phi
+phi_bins = plt.hist((dataframe)["phi"], bins = 100)[0]
 
-# for comparison, our function
-ax.plot_wireframe(q2_range, ctl_range, a, alpha=0.2)
-
-ax.set(
-    xlabel='q²',
-    ylabel=r'cos($\theta_l$)',
-    zlabel='Count',
-    # title='Count in normalised 2d bins'
-)
-ax.xaxis.labelpad = 20
-ax.yaxis.labelpad = 20
-ax.zaxis.labelpad = 20
-ax.dist = 11.5
+phi_range = np.linspace(-np.pi, np.pi, 1000)
+def func1(phi):
+    phi = phi/np.pi
+    num = 0
+    for i in range(len(c[0, 0, 0])):
+        num += P_l(i, phi) * c[0, 0, 0, i]
+    return num
+acc = np.array([func1(i) for i in phi_range])
+plt.plot(phi_range, acc * phi_bins[0] / func1(-np.pi))
+plt.xlabel('phi')
+plt.ylabel('Counts')
+plt.legend(['Acceptance Function', 'Filtered acceptance_mc'])
+plt.show()
 plt.show()
