@@ -29,14 +29,13 @@ def P_l(n, x):
 def acceptance_function(q2, ctl, ctk, phi, coeff):
     q2 = (q2-9.55)/9.45
     phi = phi/np.pi
-    x,y,z,w = np.meshgrid(q2, ctl, ctk, phi)
-    acc_func = np.zeros(x.shape)
+    acc_func = 0
     i_max, j_max, k_max, l_max = coeff.shape
     for i in range(i_max):
         for j in range(j_max):
             for k in range(k_max):
                 for l in range(l_max):
-                    acc_func += coeff[i,j,k,l] * P_l(i, x) * P_l(j, y) * P_l(k, z) * P_l(l, w)
+                    acc_func += coeff[i,j,k,l] * P_l(i, q2) * P_l(j, ctl) * P_l(k, ctk) * P_l(l, phi)
     return acc_func
 
 def coeff(dataframe):
@@ -61,12 +60,12 @@ dataframe = pd.read_pickle("data/acceptance_mc.pkl")
 dataframe, _ = selection_all_withoutres(dataframe)
 dataframe_with_res, _ = remove_combinatorial_background(dataframe)
 dataframe_with_res.to_pickle('../tmp/filtered_acc_with_res.pkl')
-#dataframe_without_res, _ = q2_resonances(dataframe_with_res)
-#dataframe_without_res.to_pickle('../tmp/filtered_acc_without_res.pkl')
+dataframe_without_res, _ = q2_resonances(dataframe_with_res)
+dataframe_without_res.to_pickle('../tmp/filtered_acc_without_res.pkl')
 
 #%%
 dataframe_with_res = pd.read_pickle('../tmp/filtered_acc_with_res.pkl')
-#dataframe_without_res = pd.read_pickle('../tmp/filtered_acc_without_res.pkl')
+dataframe_without_res = pd.read_pickle('../tmp/filtered_acc_without_res.pkl')
 
 #%%
 c = coeff(dataframe_with_res)
@@ -75,9 +74,36 @@ np.save('../tmp/coeff.npy', c)
 #%%
 c = np.load('../tmp/coeff.npy')
 
-#All the following are testing
+# =============================================================================
+# def func(q2, ctl):
+#     acc = 0
+#     q2 = (q2 -9.55) / 9.45
+#     for i in range(len(c)):
+#         for j in range(len(c[0])):
+#             acc += P_l(i, q2) * P_l(j, ctl) * c[i, j, 0, 0]
+#             
+#     return acc
+# q2 = np.linspace(0.1, 19, 100)
+# ctl = np.linspace(-1, 1, 100)
+# q2m, ctlm = np.meshgrid(q2, ctl)
+# scalar = func(q2m, ctlm)
+# plt.imshow(scalar)
+# plt.colorbar()
+# =============================================================================
 
 # =============================================================================
+# fig = plt.figure()
+# ax = fig.add_subplot(111, projection='3d')
+# ax.plot_wireframe(ctlm, q2m, scalar)
+# ax.plot_wireframe(ctlm, q2m, np.zeros(ctlm.shape))
+# =============================================================================
+
+#%%
+
+
+# =============================================================================
+# #All the following are testing
+# 
 # #%% check q2
 # bins = plt.hist(dataframe_without_res["q2"], bins = 1000)[0]
 # 
@@ -187,3 +213,4 @@ c = np.load('../tmp/coeff.npy')
 # plt.show()
 # plt.show()
 # =============================================================================
+
