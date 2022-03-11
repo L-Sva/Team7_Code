@@ -23,7 +23,8 @@ Path('../tmp/').mkdir(exist_ok=True)
 
 def P_l(n, x):
     coeff = legendre(n)
-    p = np.poly1d(coeff)
+    
+    p = np.poly1d(np.array(coeff))
     return p(x)
 
 def acceptance_function(q2, ctl, ctk, phi, coeff):
