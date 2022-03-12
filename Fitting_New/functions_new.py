@@ -53,7 +53,7 @@ def calc_coeff(dataframe, leg_shape=(6, 5, 6, 7)):
 
     max_arange = np.arange(max(leg_shape))
     ijkl = [max_arange[:num]+1/2 for num in leg_shape] # '(2i+1)/2' factors
-    ijkl_prod = np.einsum('i,j,k,l->ijkl', *ijkl, optimize='greedy') 
+    ijkl_prod = np.einsum('i,j,k,l->ijkl', *ijkl, optimize='greedy')
     # outer product of 4 vectors in einsum notation
     # used einsum here because it's faster in this case
 
@@ -79,14 +79,14 @@ def acceptance_function(q2, ctl, ctk, phi, coeff):
 
     Parameters
     ----------
-    q2, ctl, ctk, phi : int/float/1D array
+    q2, ctl, ctk, phi : int/float/1D array with same size
         values to evaluate the acceptance function at
     coeff : ndarray
         coefficients for fitted Legendre polynomials
 
     Returns
     -------
-    4D array, with shape `len(q2)xlen(ctl)xlen(ctk)xlen(phi)`
+    1D array, with len of inputs
     '''
 
     # make sure all variables are numpy arrays
@@ -103,17 +103,17 @@ def acceptance_function(q2, ctl, ctk, phi, coeff):
 
     # # creating 8d arrays here!
     # P_i = np.array([P[i](q2) for i in range(shape[0])]).reshape(
-    #     -1, 1, 1, 1, q2.size, 1, 1, 1)
+    #     -1, 1, 1, 1, q2.size)
     # P_j = np.array([P[j](ctl) for j in range(shape[1])]).reshape(
-    #     1, -1, 1, 1, 1, ctl.size, 1, 1)
+    #     1, -1, 1, 1, ctl.size)
     # P_k = np.array([P[k](ctk) for k in range(shape[2])]).reshape(
-    #     1, 1, -1, 1, 1, 1, ctk.size, 1)
+    #     1, 1, -1, 1, ctk.size)
     # P_l = np.array([P[l](phi) for l in range(shape[3])]).reshape(
-    #     1, 1, 1, -1, 1, 1, 1, phi.size)
+    #     1, 1, 1, -1, phi.size)
 
-    # coeff = np.expand_dims(coeff, axis=(4,5,6,7))
+    # coeff = np.expand_dims(coeff, axis=4)
     # acc_func = (coeff * P_i*P_j*P_k*P_l).sum((0,1,2,3))
-    
+
     P_i = np.array([P[i](q2) for i in range(shape[0])])
     P_j = np.array([P[j](ctl) for j in range(shape[1])])
     P_k = np.array([P[k](ctk) for k in range(shape[2])])
@@ -127,7 +127,7 @@ def acceptance_function(q2, ctl, ctk, phi, coeff):
 
     # sum across all coeffs, leaving q2, ctl, ctk and phi values
     acc_func = np.einsum(
-        'ab,cd,ef,gh,aceg->bdfh', P_i, P_j, P_k, P_l, coeff, optimize='greedy')
+        'ab,cb,eb,gb,aceg->b', P_i, P_j, P_k, P_l, coeff, optimize='greedy')
 
     return acc_func
 
@@ -143,7 +143,7 @@ def q2_binned(df):
     Returns
     -------
     dictionary
-        with integer keys from 0..9, corresponding to the q² bins given in 
+        with integer keys from 0..9, corresponding to the q² bins given in
         the TBPS website, also contains i1,i2,i3,i4, which are 'invalid' bins
     '''
 
@@ -168,7 +168,7 @@ def q2_binned(df):
 
     return df_q2_binned
 
-def decay_rate_S(F_l, A_fb, S_3, S_4, S_5, S_7, S_8, S_9, 
+def decay_rate_S(F_l, A_fb, S_3, S_4, S_5, S_7, S_8, S_9,
                  acceptance, q2, ctl, ctk, phi, coeff):
     '''
     Returns the pdf defined above
@@ -186,20 +186,21 @@ def decay_rate_S(F_l, A_fb, S_3, S_4, S_5, S_7, S_8, S_9,
     stk_sq = stk * stk
     cphi = np.cos(phi)
     sphi = np.sin(phi)
-    
+
+    # equation from page 44
     scalar_array = 9 * np.pi / 32 * acceptance(q2, ctl, ctk, phi, coeff) * \
         (3/4 * (1 - F_l) * stk_sq +
         F_l * ctk * ctk +
-        1/4 * (1 - F_l) * stk_sq * c2tl - 
-        F_l * ctk * ctk * c2tl + 
+        1/4 * (1 - F_l) * stk_sq * c2tl -
+        F_l * ctk * ctk * c2tl +
         S_3 * stk_sq * stl_sq * np.cos(2 * phi) +
-        S_4 * s2tk * s2tl * cphi + 
-        S_5 * s2tk * stl * cphi + 
+        S_4 * s2tk * s2tl * cphi +
+        S_5 * s2tk * stl * cphi +
         4/3 * A_fb * stk_sq * ctl +
         S_7 * s2tk * stl * sphi +
         S_8 * s2tk * s2tl * sphi +
         S_9 * stk_sq * stl_sq * 2 * sphi * cphi)
-        
+
     return scalar_array
 
 def log_likelihood_S(df, coeff, F_l, A_fb, S_3, S_4, S_5, S_7, S_8, S_9, _bin):
@@ -217,21 +218,108 @@ def log_likelihood_S(df, coeff, F_l, A_fb, S_3, S_4, S_5, S_7, S_8, S_9, _bin):
     phi = _bin['phi'].to_numpy()
     q2 = _bin['q2'].to_numpy()
     
-    normalised_scalar_array = decay_rate_S(F_l, A_fb, S_3, S_4, S_5, S_7, 
+    print(F_l, end=', ')
+
+    normalised_scalar_array = decay_rate_S(F_l, A_fb, S_3, S_4, S_5, S_7,
     S_8, S_9, acceptance_function, q2, ctl, ctk, phi, coeff)
-    
+
     def int_func(x):
-        return decay_rate_S(F_l, A_fb, S_3, S_4, S_5, S_7, S_8, S_9, 
+        return decay_rate_S(F_l, A_fb, S_3, S_4, S_5, S_7, S_8, S_9,
         acceptance_function, *x, coeff)
-    
+
     norm = vegas.Integrator(
-        [[bin_dic[binnum][0], bin_dic[binnum][1]], 
-        [-1, 1], [-1, 1], 
-        [-np.pi, np.pi]]
+        [ # integral limits for q2, ctl, ctk, phi
+            [bin_dic[binnum][0], bin_dic[binnum][1]],
+            [-1, 1],
+            [-1, 1],
+            [-np.pi, np.pi]
+        ]
     )
     result = norm(int_func, nitn=10, neval=100)
     
-    normalised_scalar_array = normalised_scalar_array / result.mean()
+    # print(result.summary())
+    # print(f'result = {result}, Q = {result.Q:.2f}')
 
-    return -np.log(normalised_scalar_array).sum()
+    normalised_scalar_array = normalised_scalar_array / result[0].mean
+
+    return -np.log(normalised_scalar_array).sum(-1)
+
+def raw_d2(fl, afb, q2, ctl, ctk, phi, coeff):
+    c2tl = 2 * ctl ** 2 - 1
+    
+    #TODO should evaluate at midpoints?
+    acceptance = acceptance_function(q2, ctl, ctk, phi, coeff)
+    
+    scalar_array = 3/8 * (3/2 - 1/2 * fl + 1/2 * c2tl * (1 - 3 * fl) +
+                   8/3 * afb * ctl) * acceptance
+    return scalar_array
+
+def d2gamma_p_d2q2_dcostheta(fl, afb, q2, ctl, ctk, phi, coeff, _bin):
+    scalar_array = raw_d2(fl, afb, q2, ctl, ctk, phi, coeff)
+
+    def integ(x):
+        return raw_d2(fl, afb, *x, coeff)
+    
+    norm = vegas.Integrator(
+        [ # integral limits for q2, ctl, ctk, phi
+            [bin_dic[_bin][0], bin_dic[_bin][1]],
+            [-1, 1],
+            [-1, 1],
+            [-np.pi, np.pi]
+        ]
+    )
+    result = norm(integ, nitn=10, neval=100)
+    
+    # to check results of integration
+    # print(result.summary())
+    # print(f'result = {result}, Q = {result.Q:.2f}')
+    
+    normalised_scalar_array = scalar_array / result[0].mean
+    
+    return normalised_scalar_array
+
+def log_likelihood(df, coeff, fl, afb, _bin):
+    '''
+    Returns the negative log-likelihood of the pdf defined above
+    :param df: pandas dataFrame
+    :param coeff: coefficients as ndarray of Legendre fits
+    :param fl: f_l observable
+    :param afb: a_fb observable
+    '''
+    
+    _bin = int(_bin) # make sure index is an integer
+    bin_data = df[_bin]
+    
+    # extract required data
+    q2 = bin_data['q2'].to_numpy()
+    ctl = bin_data['costhetal'].to_numpy()
+    ctk = bin_data['costhetak'].to_numpy()
+    phi = bin_data['phi'].to_numpy()
+
+    normalised_scalar_array = d2gamma_p_d2q2_dcostheta(
+        fl, afb, q2, ctl, ctk, phi, coeff, _bin)
+
+    with np.errstate(invalid='ignore'): # ignore 'invalid log' message
+        NLL = -np.log(normalised_scalar_array).sum(-1)
+    return NLL
+
+
+if __name__ == '__main__':
+    # for testing code
+
+    df = pd.DataFrame()
+    df_len = 34
+    rng = np.random.default_rng()
+    df['q2'] = rng.uniform(1, 16, df_len)
+    df['costhetal'] = rng.uniform(-1, 1, df_len)
+    df['costhetak'] = rng.uniform(-1, 1, df_len)
+    df['phi'] = rng.uniform(-1, 1, df_len) * np.pi
+
+    coeff = calc_coeff(df)
+
+    new = acceptance_function(
+        df['q2'], df['costhetal'], df['costhetak'], df['phi'], coeff)
+
+    print(new)
+    # 1.21280773, 1.46301936, 2.00588133
 
