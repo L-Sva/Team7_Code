@@ -1,6 +1,6 @@
 from core import load_file, RAWFILES
 import pandas as pd
-from ES_functions.Compiled import q2_resonances, Kstar_inv_mass, B0_vertex_chi2, final_state_particle_IP, B0_IP_chi2, FD, DIRA, Particle_ID, selection_all
+from ES_functions.modifiedselectioncuts import q2_resonances,q2_range,K0_vertex_chi2, Kstar_inv_mass, B0_vertex_chi2, final_state_particle_IP, B0_IP_chi2, FD,KSTAR_FD, DIRA, Particle_ID,B0_mass, selection_all,peaking_back_1,peaking_back_2,peaking_back_3,peaking_back_4,peaking_back_5,peaking_back_6,peaking_back_7,peaking_back_8
 import numpy as np
 from test_candidates_example import test_candidate_true_false_positive_negative
 from histrogram_plots_1 import generic_selector_plot_new
@@ -36,16 +36,16 @@ for non_signal in peaking_bk:
     test_data=ml_combine_signal_bk(signal, non_signal)
     mod_peaking_bk.append(test_data)
 #list of selection cuts, their names, peaking backgrounds, their names
-funclist=[q2_resonances, Kstar_inv_mass, B0_vertex_chi2, final_state_particle_IP, B0_IP_chi2, FD, DIRA, Particle_ID, selection_all]
-funclistnames=["q2_resonances", "Kstar_inv_mass", "B0_vertex_chi2", "final_state_particle_IP", "B0_IP_chi2", "flight distance", "DIRA", "particle ID", "compiled"]
-funclistnamesfull=["q\u00B2 resonances", "K*\u2070 invariant mass", "B\u2070 vertex χ\u00B2", "final state particle impact parameter", "B\u2070 impact parameter χ\u00B2", "flight distance", "DIRA angle", "particle ID", "compiled"]
-peaking_bknames = ["JPSI", "JPSI_MU_K_SWAP", "JPSI_MU_PI_SWAP", "K_PI_SWAP","PHIMUMU", "PKMUMU_PI_TO_P", "PKMUMU_PI_TO_K_K_TO_P", "PSI2S","COMBINED"]
+funclist=[q2_resonances,q2_range,K0_vertex_chi2, Kstar_inv_mass, B0_vertex_chi2, final_state_particle_IP, B0_IP_chi2, FD,KSTAR_FD, DIRA, Particle_ID,B0_mass, selection_all,peaking_back_1,peaking_back_2,peaking_back_3,peaking_back_4,peaking_back_5,peaking_back_6,peaking_back_7,peaking_back_8]
+#funclistnames=["q2_resonances", "Kstar_inv_mass", "B0_vertex_chi2", "final_state_particle_IP", "B0_IP_chi2", "flight distance", "DIRA", "particle ID", "compiled"]
+funclistnamesfull=["q\u00B2 resonances", "q\u00B2 range", "K*\u2070 vertex χ\u00B2","K*\u2070 invariant mass", "B\u2070 vertex χ\u00B2", "final state particle impact parameter", "B\u2070 impact parameter χ\u00B2", "B\u2070 flight distance","K* flight distance", "DIRA angle", "particle ID","B0 mass", "compiled", "peaking background 1", "peaking background 2", "peaking background 3", "peaking background 4", "peaking background 5", "peaking background 6", "peaking background 7", "peaking background 8"]
+#peaking_bknames = ["JPSI", "JPSI_MU_K_SWAP", "JPSI_MU_PI_SWAP", "K_PI_SWAP","PHIMUMU", "PKMUMU_PI_TO_P", "PKMUMU_PI_TO_K_K_TO_P", "PSI2S","COMBINED"]
 peaking_bknamesfull=["B\u2070→J/ψK*\u2070 peaking background","B\u2070→J/ψK*\u2070 \u03BC \u27F7 K peaking background","B\u2070→J/ψK*\u2070 \u03BC \u27F7 \u03C0 peaking background","B\u2070→K*\u2070μ\u207Aμ\u207B K \u27F7 \u03C0 peaking background","B\u209B\u2070→ϕμμ K \u27F7 \u03C0 peaking background","Λ_b\u2070→pKμμ p \u2192 K, K \u2192 \u03C0 peaking background","Λ_b\u2070→pKμμ p \u27F7 \u03C0 peaking background","B\u2070→J/ψ(2S)K*\u2070 peaking background","all peaking backgrounds"]
 
 #%%
-#q2 cut on q2 column
+#q2 resonances cut on q2 column
 column='q2'
-selection_method=0#q2 cut
+selection_method=0#q2 resonances cut
 for test_data in range(len(mod_peaking_bk)):
     #need to define column for each plot!!
     plt.close()
@@ -59,12 +59,11 @@ for test_data in range(len(mod_peaking_bk)):
     #plt.savefig(f"Selection_cuts_histograms_q2/{column}_{funclistnames[selection_method]}_{peaking_bknames[test_data]}.png")
 
 #%%
-#flight distance cut on flight distance column
-#column='B0_FDCHI2_OWNPV'
-column='B0_FD_OWNPV'
-selection_method=5#flight distance
+#B0 flight distance cut on flight distance column
+column='B0_FDCHI2_OWNPV'
+#column='B0_FD_OWNPV'
+selection_method=7#B0 flight distance
 for test_data in range(len(mod_peaking_bk)):
-    #need to define column for each plot!!
     plt.close()
     s, ns = funclist[selection_method](mod_peaking_bk[test_data])
     val = test_candidate_true_false_positive_negative(mod_peaking_bk[test_data], selection_method = funclist[selection_method])
@@ -79,7 +78,7 @@ for test_data in range(len(mod_peaking_bk)):
 #DIRA cut produces poor graphs because the angle that we cut at is so small
 # =============================================================================
 # column='B0_DIRA_OWNPV'
-# selection_method=6#DIRA (angle)
+# selection_method=9#DIRA (angle)
 # for test_data in range(len(mod_peaking_bk)):
 #     #need to define column for each plot!!
 #     plt.close()
@@ -97,7 +96,7 @@ for test_data in range(len(mod_peaking_bk)):
 ##combined selection cut
 # =============================================================================
 # column='q2'
-# selection_method=8#combined
+# selection_method=11#combined
 # for test_data in range(len(mod_peaking_bk)):
 #     #need to define column for each plot!!
 #     plt.close()
@@ -113,8 +112,8 @@ for test_data in range(len(mod_peaking_bk)):
 # =============================================================================
 #%%
 #Particle ID selection cut performed on "probability that a Kaon is identified as a pion" column.
-column='K_MC15TuneV1_ProbNNpi'#can be any of the mc15 columns - because these columns are the columns repsonsible for misidentification
-selection_method=7#particle ID
+column='K_MC15TuneV1_ProbNNpi'#can be another mc15 column - because these columns are the columns repsonsible for misidentification
+selection_method=10#particle ID
 for test_data in range(len(mod_peaking_bk)):
     plt.close()
     s, ns = funclist[selection_method](mod_peaking_bk[test_data])
@@ -128,7 +127,7 @@ for test_data in range(len(mod_peaking_bk)):
 
 #%%
 column='Kstar_MM'#can be any of the mc15 columns - because these columns are the columns repsonsible for misidentification
-selection_method=1#kstar inv mass
+selection_method=3#kstar inv mass
 for test_data in range(len(mod_peaking_bk)):
     plt.close()
     s, ns = funclist[selection_method](mod_peaking_bk[test_data])
