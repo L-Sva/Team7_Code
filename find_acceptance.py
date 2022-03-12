@@ -7,10 +7,10 @@ import matplotlib.pyplot as plt
 import pickle
 import os
 
-from Team7_Code.core import load_file, RAWFILES
-from Team7_Code.ES_functions.Compiled import selection_all
+from core import load_file, RAWFILES
+from ES_functions.Compiled import selection_all
 
-from functions import calc_ctl_bins, calc_ebins_cnt, make_Leg, \
+from fitting.functions import calc_ctl_bins, calc_ebins_cnt, make_Leg, \
 acceptance_function, rescale_q2
 
 plt.rcParams['font.size'] = 18
@@ -23,17 +23,31 @@ params_dict = {
     # q² bins for calculating the continuous fitting function
     'q2_eval': np.array(
         [0.1, 0.98, 1.1, 2.5, 4, 6, 8, 10, 12, 14, 15, 17, 19]),
-    
+
     # percentiles to find ctl (inner) boundaries at
     'ctl_percentile': np.arange(10, 100, 10),
-    
+
     # order of Legendre polynomial to fit to
     'i_range': 5,
     'j_range': 4,
+
+    # Cos theta l bins for calculating the acceptance function
+    'ctl_bins': None,
+
+    # Mid points of bins
+    'eq2_mid': None,
+    'ctl_mid': None,
+
+    # Discrete acceptance function
+    'acceptance_func_discrete': None,
+
+    # Acceptance function
+    'P': None,
+    'c': None,
 }
 
 
-'''
+
 # make folder called tmp
 # this will be used to store intermediary variables
 os.makedirs(os.path.dirname('./tmp/'), exist_ok=True)
@@ -51,9 +65,9 @@ filtered_summed, _ = selection_all(summed_dataset)
 # save the above variables to avoid re-calculating and faster loading
 with open('tmp/af_dfs.pkl', 'wb') as acceptance_params:
     pickle.dump([acceptance, filtered_summed, raw_signal], acceptance_params)
-'''
 
-'''
+
+
 ## Checkpoint 1
 with open('tmp/af_dfs.pkl', 'rb') as acceptance_params:
     acceptance, filtered_summed, raw_signal = pickle.load(acceptance_params)
@@ -81,9 +95,9 @@ params_dict['acceptance_func_discrete'] = acceptance_func_discrete
 
 with open('tmp/bins_counts.pkl', 'wb') as f:
     pickle.dump(params_dict, f)
-'''
 
-'''
+
+
 ## Checkpoint 2
 with open('tmp/bins_counts.pkl', 'rb') as f:
     params_dict = pickle.load(f)
@@ -102,6 +116,10 @@ ctl_mid = (ctl_normal[:,:-1]+ctl_normal[:,1:])/2
 ctl_bw = np.diff(ctl_normal)
 
 params_dict['ctl_mid'] = ctl_mid
+
+# divide discrete acceptance function by 2d bin widths
+bw_2d = ctl_bw * eq2_bw[:,None]
+params_dict['acceptance_func_discrete'] /= bw_2d
 
 # list of Legendre polynomials
 P = make_Leg(max(params_dict['i_range'], params_dict['j_range']))
@@ -123,40 +141,40 @@ params_dict['c'] = c
 
 with open('tmp/acceptance_coeff.pkl', 'wb') as f:
     pickle.dump(params_dict, f)
-'''
 
 
-## Checkpoint 3
-with open('tmp/acceptance_coeff.pkl', 'rb') as f:
-    params_dict = pickle.load(f)
+if __name__=='__main__':
+    ## Checkpoint 3
+    with open('tmp/acceptance_coeff.pkl', 'rb') as f:
+        params_dict = pickle.load(f)
 
-# used to plot continuous acceptance function
-q2_range, ctl_range = np.ogrid[-1:1:100j, -1:1:100j]
+    # used to plot continuous acceptance function
+    q2_range, ctl_range = np.ogrid[-1:1:100j, -1:1:100j]
 
-a = acceptance_function(q2_range, ctl_range, params_dict)
+    a = acceptance_function(q2_range, ctl_range, params_dict)
 
-fig, ax = plt.subplots(
-    subplot_kw={'projection': '3d'}, constrained_layout=True)
+    fig, ax = plt.subplots(
+        subplot_kw={'projection': '3d'}, constrained_layout=True)
 
-# loop and plot actual values
-for row in range(params_dict['ctl_mid'].shape[0]):
-    ax.scatter(
-        params_dict['eq2_mid'][row], params_dict['ctl_mid'][row],
-        params_dict['acceptance_func_discrete'][row]
+    # loop and plot actual values
+    for row in range(params_dict['ctl_mid'].shape[0]):
+        ax.scatter(
+            params_dict['eq2_mid'][row], params_dict['ctl_mid'][row],
+            params_dict['acceptance_func_discrete'][row]
+        )
+
+    # for comparison, our function
+    ax.plot_wireframe(q2_range, ctl_range, a, alpha=0.2)
+
+    ax.set(
+        xlabel='q²',
+        ylabel=r'cos($\theta_l$)',
+        zlabel='Count',
+        # title='Count in normalised 2d bins'
     )
-
-# for comparison, our function
-ax.plot_wireframe(q2_range, ctl_range, a, alpha=0.2)
-
-ax.set(
-    xlabel='q²',
-    ylabel=r'cos($\theta_l$)',
-    zlabel='Count',
-    # title='Count in normalised 2d bins'
-)
-ax.xaxis.labelpad = 20
-ax.yaxis.labelpad = 20
-ax.zaxis.labelpad = 20
-ax.dist = 11.5
-plt.show()
+    ax.xaxis.labelpad = 20
+    ax.yaxis.labelpad = 20
+    ax.zaxis.labelpad = 20
+    ax.dist = 11.5
+    plt.show()
 
