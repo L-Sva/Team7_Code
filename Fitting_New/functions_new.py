@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.polynomial import Legendre
 import pandas as pd
-import vegas
+from scipy.integrate import dblquad
 
 
 bin_dic = {
@@ -28,7 +28,7 @@ def make_Leg(poly_degree):
         P.append(Legendre(Leg_int_coeff))
     return P
 
-def calc_coeff(dataframe, leg_shape=(6, 5, 6, 7)):
+def calc_coeff(dataframe, leg_shape=(6, 5)):
     '''
     Calculates coefficients for Legendre fitting.
 
@@ -40,46 +40,39 @@ def calc_coeff(dataframe, leg_shape=(6, 5, 6, 7)):
 
     Returns
     -------
-    4D array, with shape given by `leg_shape`
+    2D array, with shape given by `leg_shape`
     '''
 
     N = len(dataframe)
     q2 = rescale_q2(dataframe['q2'])
     ctl = dataframe['costhetal'].to_numpy()
-    ctk = dataframe['costhetak'].to_numpy()
-    phi = dataframe['phi'].to_numpy()/np.pi
 
     P = make_Leg(max(leg_shape)) # list of Legendre polynomials
 
     max_arange = np.arange(max(leg_shape))
-    ijkl = [max_arange[:num]+1/2 for num in leg_shape] # '(2i+1)/2' factors
-    ijkl_prod = np.einsum('i,j,k,l->ijkl', *ijkl, optimize='greedy')
+    ij = [max_arange[:num]+1/2 for num in leg_shape] # '(2i+1)/2' factors
+    ij_prod = np.einsum('i,j->ij', *ij, optimize=True)
+
     # outer product of 4 vectors in einsum notation
     # used einsum here because it's faster in this case
 
-    P_i = np.array(
-        [P[i](q2) for i in range(leg_shape[0])]).reshape(-1, 1, 1, 1, N)
-    P_j = np.array(
-        [P[j](ctl) for j in range(leg_shape[1])]).reshape(1, -1, 1, 1, N)
-    P_k = np.array(
-        [P[k](ctk) for k in range(leg_shape[2])]).reshape(1, 1, -1, 1, N)
-    P_l = np.array(
-        [P[l](phi) for l in range(leg_shape[3])]).reshape(1, 1, 1, -1, N)
+    P_i = np.array([P[i](q2) for i in range(leg_shape[0])])
+    P_j = np.array([P[j](ctl) for j in range(leg_shape[1])])
 
     # equivalent einsum for this part – outer product and sum across data
-    # P_ijkl_prod = np.einsum('ab,cb,eb,gb->aceg', P_i, P_j, P_k, P_l)
+    # P_ij_prod = np.einsum('ab,cb->ac', P_i, P_j, optimize=True)
 
-    c = 1/N * ijkl_prod * (P_i*P_j*P_k*P_l).sum(-1)
+    c = 1/N * ij_prod * (P_i[:,None]*P_j).sum(-1)
 
     return c
 
-def acceptance_function(q2, ctl, ctk, phi, coeff):
+def acceptance_function(q2, ctl, coeff):
     '''
     Continuous acceptance function.
 
     Parameters
     ----------
-    q2, ctl, ctk, phi : int/float/1D array with same size
+    q2, ctl : int/float/1D array with same size
         values to evaluate the acceptance function at
     coeff : ndarray
         coefficients for fitted Legendre polynomials
@@ -92,11 +85,8 @@ def acceptance_function(q2, ctl, ctk, phi, coeff):
     # make sure all variables are numpy arrays
     q2 = np.asarray(q2)
     ctl = np.asarray(ctl)
-    ctk = np.asarray(ctk)
-    phi = np.asarray(phi)
 
     q2 = rescale_q2(q2)
-    phi = phi/np.pi
     shape = coeff.shape
 
     P = make_Leg(max(shape))
@@ -116,18 +106,16 @@ def acceptance_function(q2, ctl, ctk, phi, coeff):
 
     P_i = np.array([P[i](q2) for i in range(shape[0])])
     P_j = np.array([P[j](ctl) for j in range(shape[1])])
-    P_k = np.array([P[k](ctk) for k in range(shape[2])])
-    P_l = np.array([P[l](phi) for l in range(shape[3])])
 
     # again, code using einsum
     # convert 1d arrays to 2d, if not already 2d
-    for P_var in (P_i, P_j, P_k, P_l):
+    for P_var in (P_i, P_j):
         if P_var.ndim != 2:
             P_var.shape = (-1, 1)
 
     # sum across all coeffs, leaving q2, ctl, ctk and phi values
     acc_func = np.einsum(
-        'ab,cb,eb,gb,aceg->b', P_i, P_j, P_k, P_l, coeff, optimize='greedy')
+        'ab,cb,ac->b', P_i, P_j, coeff, optimize='greedy')
 
     return acc_func
 
@@ -217,7 +205,7 @@ def log_likelihood_S(df, coeff, F_l, A_fb, S_3, S_4, S_5, S_7, S_8, S_9, _bin):
     ctk = _bin['costhetak'].to_numpy()
     phi = _bin['phi'].to_numpy()
     q2 = _bin['q2'].to_numpy()
-    
+
     print(F_l, end=', ')
 
     normalised_scalar_array = decay_rate_S(F_l, A_fb, S_3, S_4, S_5, S_7,
@@ -236,7 +224,7 @@ def log_likelihood_S(df, coeff, F_l, A_fb, S_3, S_4, S_5, S_7, S_8, S_9, _bin):
         ]
     )
     result = norm(int_func, nitn=10, neval=100)
-    
+
     # print(result.summary())
     # print(f'result = {result}, Q = {result.Q:.2f}')
 
@@ -244,39 +232,25 @@ def log_likelihood_S(df, coeff, F_l, A_fb, S_3, S_4, S_5, S_7, S_8, S_9, _bin):
 
     return -np.log(normalised_scalar_array).sum(-1)
 
-def raw_d2(fl, afb, q2, ctl, ctk, phi, coeff):
+def decay_rate(fl, afb, q2, ctl, coeff):
     c2tl = 2 * ctl ** 2 - 1
-    
-    #TODO should evaluate at midpoints?
-    acceptance = acceptance_function(q2, ctl, ctk, phi, coeff)
-    
+
+    acceptance = acceptance_function(q2, ctl, coeff)
+
     scalar_array = 3/8 * (3/2 - 1/2 * fl + 1/2 * c2tl * (1 - 3 * fl) +
                    8/3 * afb * ctl) * acceptance
     return scalar_array
 
-def d2gamma_p_d2q2_dcostheta(fl, afb, q2, ctl, ctk, phi, coeff, _bin):
-    scalar_array = raw_d2(fl, afb, q2, ctl, ctk, phi, coeff)
+def d2gamma_p_d2q2_dcostheta(fl, afb, q2, ctl, coeff, _bin):
+    scalar_array = decay_rate(fl, afb, q2, ctl, coeff)
 
-    def integ(x):
-        return raw_d2(fl, afb, *x, coeff)
-    
-    norm = vegas.Integrator(
-        [ # integral limits for q2, ctl, ctk, phi
-            [bin_dic[_bin][0], bin_dic[_bin][1]],
-            [-1, 1],
-            [-1, 1],
-            [-np.pi, np.pi]
-        ]
-    )
-    result = norm(integ, nitn=10, neval=100)
-    
-    # to check results of integration
-    # print(result.summary())
-    # print(f'result = {result}, Q = {result.Q:.2f}')
-    
-    normalised_scalar_array = scalar_array / result[0].mean
-    
-    return normalised_scalar_array
+    def integ(q2, ctl):
+        return decay_rate(fl, afb, q2, ctl, coeff)
+
+    # double integral over q² and ctl
+    norm = dblquad(integ, bin_dic[_bin][0], bin_dic[_bin][1], -1, 1)[0]
+
+    return scalar_array/norm
 
 def log_likelihood(df, coeff, fl, afb, _bin):
     '''
@@ -286,40 +260,38 @@ def log_likelihood(df, coeff, fl, afb, _bin):
     :param fl: f_l observable
     :param afb: a_fb observable
     '''
-    
+
     _bin = int(_bin) # make sure index is an integer
     bin_data = df[_bin]
-    
+
     # extract required data
     q2 = bin_data['q2'].to_numpy()
     ctl = bin_data['costhetal'].to_numpy()
-    ctk = bin_data['costhetak'].to_numpy()
-    phi = bin_data['phi'].to_numpy()
 
     normalised_scalar_array = d2gamma_p_d2q2_dcostheta(
-        fl, afb, q2, ctl, ctk, phi, coeff, _bin)
+        fl, afb, q2, ctl, coeff, _bin)
 
-    with np.errstate(invalid='ignore'): # ignore 'invalid log' message
-        NLL = -np.log(normalised_scalar_array).sum(-1)
+    NLL = -np.log(normalised_scalar_array, out=np.zeros(q2.size), 
+                  where=(normalised_scalar_array>0)).sum()
+
     return NLL
-
 
 if __name__ == '__main__':
     # for testing code
 
     df = pd.DataFrame()
     df_len = 34
-    rng = np.random.default_rng()
+    rng = np.random.default_rng(0)
     df['q2'] = rng.uniform(1, 16, df_len)
     df['costhetal'] = rng.uniform(-1, 1, df_len)
-    df['costhetak'] = rng.uniform(-1, 1, df_len)
-    df['phi'] = rng.uniform(-1, 1, df_len) * np.pi
+    # df['costhetak'] = rng.uniform(-1, 1, df_len)
+    # df['phi'] = rng.uniform(-1, 1, df_len) * np.pi
 
     coeff = calc_coeff(df)
+    # print(coeff[0])
 
-    new = acceptance_function(
-        df['q2'], df['costhetal'], df['costhetak'], df['phi'], coeff)
+    new = acceptance_function(df['q2'], df['costhetal'], coeff)
 
     print(new)
-    # 1.21280773, 1.46301936, 2.00588133
+    # 0.48022672, 0.12913039, 0.20780453
 

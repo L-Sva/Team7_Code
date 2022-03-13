@@ -25,7 +25,7 @@ def test_NLL():
     _test_afb = 0.7
     _test_fl = 0.0
 
-    x = np.linspace(-1, 1, 100)
+    x = np.linspace(-1, 1, 50)
     fig, (ax1, ax2) = plt.subplots(1, 2)
     # testing log_likelihood for different values of fl from -1 to 1
     ax1.plot(x, [df_log_likelihood(fl=i, afb=_test_afb, _bin=_test_bin)
@@ -58,8 +58,6 @@ def fit_bins():
     afbs, afb_errs = [], []
 
     for i in range(10):
-        # i=2 ##
-
         m = Minuit(df_log_likelihood, fl=starting_point[0],
         afb=starting_point[1], _bin=i)
 
@@ -76,8 +74,6 @@ def fit_bins():
 
         colour = '\033[32m' if m.fmin.is_valid else '\033[31m'
 
-        # i=0 ##
-
         print(
             f'Bin {i}: {np.round(fls[i], decimal_places)} ± '
             f'{np.round(fl_errs[i], decimal_places)},'
@@ -86,8 +82,6 @@ def fit_bins():
             f'Function minimum considered valid: '
             f'{colour}{m.fmin.is_valid}\033[0m'
         )
-
-        # exit() ##
 
     np.savez('../tmp/af_fitting.npz', fls=fls, fl_errs=fl_errs,
     afbs=afbs, afb_errs=afb_errs)
@@ -129,41 +123,41 @@ if __name__ == '__main__':
     dataframe = pd.read_pickle('../tmp/filtered_total_dataset.pkl')
     bins = q2_binned(dataframe)
     coeff = np.load('../tmp/coeff.npy')
-
+    
     df_log_likelihood = partial(log_likelihood, bins, coeff)
 
-    # test_NLL()
+    test_NLL()
     # fit_bins()
     # plot_against_SM()
 
 
     # 8-param fits:
-    bins_log_likelihood_S = partial(log_likelihood_S, bins, coeff)
+    # bins_log_likelihood_S = partial(log_likelihood_S, bins, coeff)
 
-    bins_log_likelihood_S.errordef = Minuit.LIKELIHOOD
+    # bins_log_likelihood_S.errordef = Minuit.LIKELIHOOD
 
-    bin_no = 3 # change value here
-    results = []
-    errors = []
+    # bin_no = 3 # change value here
+    # results = []
+    # errors = []
 
-    starting_point = [
-        0.7112903962261427, 0.12215506287920677, -0.024751439845413715,
-        -0.22420373935504972, -0.3371396761500003, -0.013382849845922798,
-        -0.0050616569813558675, -0.00070641680143312
-    ]
-    m = Minuit(bins_log_likelihood_S, *starting_point, bin_no)
+    # starting_point = [
+    #     0.7112903962261427, 0.12215506287920677, -0.024751439845413715,
+    #     -0.22420373935504972, -0.3371396761500003, -0.013382849845922798,
+    #     -0.0050616569813558675, -0.00070641680143312
+    # ]
+    # m = Minuit(bins_log_likelihood_S, *starting_point, bin_no)
 
-    m.fixed['_bin'] = True # don't optimise _bin
-    m.limits=((-1.0, 1.0), (-1.0, 1.0), (-1.0, 1.0), (-1.0, 1.0),
-              (-1.0, 1.0), (-1.0, 1.0), (-1.0, 1.0), (-1.0, 1.0), None)
-    m.migrad()
-    results.append(np.array(m.values))
-    errors.append(np.array(m.errors))
-    # m.fmin
-    # m.params
+    # m.fixed['_bin'] = True # don't optimise _bin
+    # m.limits=((-1.0, 1.0), (-1.0, 1.0), (-1.0, 1.0), (-1.0, 1.0),
+    #           (-1.0, 1.0), (-1.0, 1.0), (-1.0, 1.0), (-1.0, 1.0), None)
+    # m.migrad()
+    # results.append(np.array(m.values))
+    # errors.append(np.array(m.errors))
+    # # m.fmin
+    # # m.params
 
-    msg = '\033[32mValid' if m.fmin.is_valid else '\033[31mNot Valid'
-    print(f'Bin {bin_no}: {msg}\033[0m')
+    # msg = '\033[32mValid' if m.fmin.is_valid else '\033[31mNot Valid'
+    # print(f'Bin {bin_no}: {msg}\033[0m')
 
-    print(results, errors)
+    # print(results, errors)
 
