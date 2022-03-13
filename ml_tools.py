@@ -73,7 +73,7 @@ def test_false_true_negative_positive(test_dataset, sig_prob, threshold) -> dict
     }
 
 
-def roc_curve(model, test_data):
+def roc_curve(model, test_data, reject_column_names=('B0_ID','polarity')):
     # Jose
     '''
     Test data needs to be in pandas dataframe format.
@@ -91,10 +91,8 @@ def roc_curve(model, test_data):
     rate, fpr). Each point on this curve corresponds to a cut value threshold.
     '''
 
-    def predict_prob(data, model):
-        return model.predict_proba(data.drop('category',axis=1).values)[:,1]
-
-    sp = predict_prob(test_data, model)
+    data_c = ml_strip_columns(test_data, reject_column_names=list(reject_column_names)+['category'])
+    sp = model.predict_proba(data_c.values)[:,1]
     fpr, tpr, cut_values = metrics.roc_curve(test_data['category'], sp)
     area = metrics.auc(fpr, tpr)
 
@@ -129,6 +127,16 @@ def test_sb(test_dataset, sig_prob, threshold, bk_penalty = 1):
         return 0
     metric = S/np.sqrt(S+B)
     return metric
+
+def ideal_sb(test_dataset):
+    x = test_dataset['category'].to_numpy()
+    x_mask_0 = x == 0
+    x_mask_1 = x == 1
+    S = np.count_nonzero(x_mask_1)
+    B = np.count_nonzero(x_mask_0)
+    if S == 0:
+        return 0
+    return S/np.sqrt(S)
 
 def test_sb_null_test(test_dataset, sig_prob, threshold):
 
