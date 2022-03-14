@@ -244,11 +244,12 @@ def decay_rate(fl, afb, q2, ctl, coeff):
 def d2gamma_p_d2q2_dcostheta(fl, afb, q2, ctl, coeff, _bin):
     scalar_array = decay_rate(fl, afb, q2, ctl, coeff)
 
-    def integ(q2, ctl):
-        return decay_rate(fl, afb, q2, ctl, coeff)
+    # def integ(q2, ctl):
+    #     return decay_rate(fl, afb, q2, ctl, coeff)
 
     # double integral over q² and ctl
-    norm = dblquad(integ, bin_dic[_bin][0], bin_dic[_bin][1], -1, 1)[0]
+    # norm = dblquad(integ, bin_dic[_bin][0], bin_dic[_bin][1], -1, 1)[0]
+    norm = 1
 
     return scalar_array/norm
 
@@ -271,8 +272,10 @@ def log_likelihood(df, coeff, fl, afb, _bin):
     normalised_scalar_array = d2gamma_p_d2q2_dcostheta(
         fl, afb, q2, ctl, coeff, _bin)
 
-    NLL = -np.log(normalised_scalar_array, out=np.zeros(q2.size), 
-                  where=(normalised_scalar_array>0)).sum()
+    NLL = -np.log(normalised_scalar_array, 
+                  out=np.zeros((fl.size, afb.size, q2.size)),
+                  where=(normalised_scalar_array>0)
+            ).sum(-1)
 
     return NLL
 

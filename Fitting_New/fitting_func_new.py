@@ -83,25 +83,36 @@ def fit_bins():
             f'{colour}{m.fmin.is_valid}\033[0m'
         )
 
-    np.savez('../tmp/af_fitting.npz', fls=fls, fl_errs=fl_errs,
+    np.savez('../tmp/no_norm_af_fitting.npz', fls=fls, fl_errs=fl_errs,
     afbs=afbs, afb_errs=afb_errs)
 
 def plot_against_SM():
-    fits = np.load('../tmp/af_fitting.npz')
+    fits = np.load('../tmp/no_norm_af_fitting.npz')
     SM_data = np.load('../tmp/SM_data.npz')
 
     formatting = dict(ms=5, capsize=3)
 
     fig, ax = plt.subplots(1, 2)
 
-    ax[0].errorbar(range(10), fits['fls'], yerr=fits['fl_errs'], fmt='k.')
-    ax[0].errorbar(range(10), SM_data['FL'], yerr=SM_data['FL_err'], fmt='r.')
+    ax[0].errorbar(
+        range(10), fits['fls'], yerr=fits['fl_errs'],
+        fmt='k.', **formatting
+    )
+    ax[0].errorbar(
+        range(10), SM_data['FL'], yerr=SM_data['FL_err'],
+        fmt='r.', **formatting
+    )
     ax[0].set(xlabel='Bin number', ylabel=r'$F_L$', xticks=range(10))
     ax[0].grid()
 
-    ax[1].errorbar(range(10), fits['afbs'], yerr=fits['afb_errs'], fmt='k.')
-    ax[1].errorbar(range(10), SM_data['AFB'], yerr=SM_data['AFB_err'],
-    fmt='r.')
+    ax[1].errorbar(
+        range(10), fits['afbs'], yerr=fits['afb_errs'],
+        fmt='k.', **formatting
+    )
+    ax[1].errorbar(
+        range(10), SM_data['AFB'], yerr=SM_data['AFB_err'],
+        fmt='r.', **formatting
+    )
     ax[1].set(xlabel='Bin number', ylabel=r'$A_{FB}$', xticks=range(10))
     ax[1].grid()
 
@@ -123,10 +134,26 @@ if __name__ == '__main__':
     dataframe = pd.read_pickle('../tmp/filtered_total_dataset.pkl')
     bins = q2_binned(dataframe)
     coeff = np.load('../tmp/coeff.npy')
-    
+
     df_log_likelihood = partial(log_likelihood, bins, coeff)
 
-    test_NLL()
+    fl_range = np.linspace(-1, 1, 30).reshape(-1, 1, 1)
+    afb_range = np.linspace(-1, 1, 30).reshape(1, -1, 1)
+    NLL_ranged = df_log_likelihood(fl_range, afb_range, 0)
+    
+    SM_data = np.load('../tmp/SM_data.npz')
+    
+    fig, ax = plt.subplots()
+    axc = ax.contourf(
+        fl_range.flatten(), afb_range.flatten(), NLL_ranged, cmap='binary')
+    fig.colorbar(axc)
+    ax.plot(SM_data['FL'][0], SM_data['AFB'][0], 'r.')
+    ax.set(xlabel=r'$F_L$', ylabel=r'$A_{FB}$')
+    ax.set_title('Not normalised, bin 0')
+    plt.show()
+
+
+    # test_NLL()
     # fit_bins()
     # plot_against_SM()
 
