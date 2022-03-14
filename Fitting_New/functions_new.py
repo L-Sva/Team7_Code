@@ -244,12 +244,12 @@ def decay_rate(fl, afb, q2, ctl, coeff):
 def d2gamma_p_d2q2_dcostheta(fl, afb, q2, ctl, coeff, _bin):
     scalar_array = decay_rate(fl, afb, q2, ctl, coeff)
 
-    # def integ(q2, ctl):
-    #     return decay_rate(fl, afb, q2, ctl, coeff)
+    def integ(q2, ctl):
+        return decay_rate(fl, afb, q2, ctl, coeff)
 
     # double integral over q² and ctl
-    # norm = dblquad(integ, bin_dic[_bin][0], bin_dic[_bin][1], -1, 1)[0]
-    norm = 1
+    norm = dblquad(integ, bin_dic[_bin][0], bin_dic[_bin][1], -1, 1)[0]
+    # norm = 1
 
     return scalar_array/norm
 

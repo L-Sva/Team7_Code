@@ -137,11 +137,24 @@ if __name__ == '__main__':
 
     df_log_likelihood = partial(log_likelihood, bins, coeff)
 
-    fl_range = np.linspace(-1, 1, 30).reshape(-1, 1, 1)
-    afb_range = np.linspace(-1, 1, 30).reshape(1, -1, 1)
-    NLL_ranged = df_log_likelihood(fl_range, afb_range, 0)
+    fl_range = np.linspace(-1, 1, 30)
+    afb_range = np.linspace(-1, 1, 30)
+    NLL_ranged = np.zeros((fl_range.size, afb_range.size))
+    
+    '''
+    for i, i_val in enumerate(fl_range):
+        for j, j_val in enumerate(afb_range):
+            NLL_ranged[i,j] = df_log_likelihood(i_val, j_val, 0)
+        print('done one!')
+    
+    np.save('NLL_ranged.npy', NLL_ranged)
+    print('\033[31mdone saving!\033[0m')
+    
+    exit()
+    '''
     
     SM_data = np.load('../tmp/SM_data.npz')
+    NLL_ranged = np.load('NLL_ranged.npy')
     
     fig, ax = plt.subplots()
     axc = ax.contourf(
@@ -149,7 +162,7 @@ if __name__ == '__main__':
     fig.colorbar(axc)
     ax.plot(SM_data['FL'][0], SM_data['AFB'][0], 'r.')
     ax.set(xlabel=r'$F_L$', ylabel=r'$A_{FB}$')
-    ax.set_title('Not normalised, bin 0')
+    ax.set_title('Normalised, bin 0')
     plt.show()
 
 
