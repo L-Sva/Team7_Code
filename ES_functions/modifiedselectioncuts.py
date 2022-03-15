@@ -164,10 +164,10 @@ def Particle_ID(dataframe):
     crit4 = (DLL(dataframe[ L_1[3] ], dataframe[ L_2[3] ] ) < 25)
     
     
-    subset = dataframe[ DLL(dataframe[ L_1[0] ], dataframe[ L_2[0] ] ) > -3]
-    subset = subset[ DLL(dataframe[ L_1[1] ], dataframe[ L_2[1] ] ) > -3]
-    subset = subset[ DLL(dataframe[ L_1[2] ], dataframe[ L_2[2] ] ) > -5]  
-    subset = subset[ DLL(dataframe[ L_1[3] ], dataframe[ L_2[3] ] ) < 25]   
+    # subset = dataframe[ DLL(dataframe[ L_1[0] ], dataframe[ L_2[0] ] ) > -3]
+    # subset = subset[ DLL(dataframe[ L_1[1] ], dataframe[ L_2[1] ] ) > -3]
+    # subset = subset[ DLL(dataframe[ L_1[2] ], dataframe[ L_2[2] ] ) > -5]  
+    # subset = subset[ DLL(dataframe[ L_1[3] ], dataframe[ L_2[3] ] ) < 25]   
     
     accept = crit1 & crit2 & crit3 & crit4
     reject = ~accept
