@@ -337,7 +337,7 @@ def decay_rate(fl, afb, q2, ctl, coeff):
 def d2gamma_p_d2q2_dcostheta(fl, afb, q2, ctl, coeff, _bin):
     scalar_array = decay_rate(fl, afb, q2, ctl, coeff)
 
-    delta_normed = np.load('delta_normed.npy')[_bin]
+    delta_normed = np.load('tmp/delta_normed.npy')[_bin]
     param_array = np.array(
         [3/2 - 1/2*fl, 0.5 * (1 - 3*fl), 8/3 * afb], dtype=object) * 3/8
 
