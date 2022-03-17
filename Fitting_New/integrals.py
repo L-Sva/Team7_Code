@@ -25,7 +25,7 @@ bin_dic = {
 }
 
 
-def save_reduced():
+def get_reduced(coeff):
     @vegas.batchintegrand
     def term_1(x, coeff):
         return acceptance_function(*x, coeff)
@@ -39,8 +39,6 @@ def save_reduced():
         return acceptance_function(*x, coeff) * x[1]
 
     terms = [term_1, term_2, term_3]
-
-    coeff = np.load('../tmp/coeff.npy')
 
     def normalization_1D(coeff, bin_no):
         norm = vegas.Integrator(
@@ -58,11 +56,8 @@ def save_reduced():
 
         return np.array(I)
 
-    delta_normed = [normalization_1D(coeff, bin_no)
-    for bin_no in range(10)]
-    np.save('../tmp/delta_normed.npy', delta_normed) # save to be called later
-
-    print('Done saving reduced delta_normed.')
+    delta_normed = [normalization_1D(coeff, bin_no) for bin_no in range(10)]
+    return delta_normed
 
 def save_8d():
     @vegas.batchintegrand
@@ -149,6 +144,10 @@ def save_8d():
     print('Done saving all delta_normed_8d.')
 
 
-# save_reduced()
-# save_8d()
+if __name__ == '__main__':
+    coeff = np.load('../tmp/coeff.npy')
+    delta_normed = get_reduced(coeff)
+    np.save('../tmp/delta_normed.npy', delta_normed) # save to be called later
+    print('Done saving reduced delta_normed.')
+    save_8d()
 

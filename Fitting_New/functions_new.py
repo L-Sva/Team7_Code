@@ -334,18 +334,16 @@ def decay_rate(fl, afb, q2, ctl, coeff):
 
     return scalar_array
 
-def d2gamma_p_d2q2_dcostheta(fl, afb, q2, ctl, coeff, _bin):
+def d2gamma_p_d2q2_dcostheta(fl, afb, q2, ctl, coeff, delta_normed, _bin):
     scalar_array = decay_rate(fl, afb, q2, ctl, coeff)
-
-    delta_normed = np.load('tmp/delta_normed.npy')[_bin]
     param_array = np.array(
         [3/2 - 1/2*fl, 0.5 * (1 - 3*fl), 8/3 * afb], dtype=object) * 3/8
 
-    norms_array = delta_normed.dot(param_array)
+    norms_array = delta_normed[_bin].dot(param_array)
 
     return scalar_array/norms_array
 
-def log_likelihood(df, coeff, fl, afb, _bin):
+def log_likelihood(df, coeff, delta_normed, fl, afb, _bin):
     '''
     Returns the negative log-likelihood of the pdf defined above
     :param df: pandas dataFrame
@@ -362,7 +360,7 @@ def log_likelihood(df, coeff, fl, afb, _bin):
     ctl = bin_data['costhetal'].to_numpy()
 
     normalised_scalar_array = d2gamma_p_d2q2_dcostheta(
-        fl, afb, q2, ctl, coeff, _bin)
+        fl, afb, q2, ctl, coeff, delta_normed, _bin)
 
     NLL = -np.log(normalised_scalar_array,
                 #   out=np.zeros((fl.size, afb.size, q2.size)),

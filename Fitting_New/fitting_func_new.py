@@ -237,15 +237,17 @@ if __name__ == '__main__':
     coeff = np.load('../tmp/coeff.npy')
     coeff_4d = np.load('../tmp/coeff_4d.npy')
 
-    df_log_likelihood = partial(log_likelihood, bins, coeff)
+    delta_normed = np.load('tmp/delta_normed.npy')
+
+    df_log_likelihood = partial(log_likelihood, bins, coeff, delta_normed)
     bins_log_likelihood_S = partial(log_likelihood_S, bins, coeff_4d)
 
-    # test_NLL()
-    # fit_bins()
-    # plot_against_SM()
+    test_NLL()
+    fit_bins()
+    plot_against_SM()
 
-    # fit_8d()
-    # plot_8d_against_SM()
+    fit_8d()
+    plot_8d_against_SM()
 
     '''
     fl_range = np.linspace(-1, 1, 30).reshape(-1, 1, 1)
