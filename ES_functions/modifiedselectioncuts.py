@@ -7,18 +7,21 @@ Created on Mon Feb 28 13:00:15 2022
 """
 
 import numpy as np
-import scipy as sp
-from scipy.optimize import fsolve
-import scipy.stats as ss
 import pandas as pd
 import glob as glob
+import warnings
+import matplotlib.pyplot as plt
 
 
 dataframe = pd.read_pickle("Data/total_dataset.pkl")
 
 
 def DLL(L_k, L_p):
-    return np.log(L_k/L_p)
+    with warnings.catch_warnings():
+        # Ignore warnings due to L_k value being set to -1000
+        # eg. in total_dataset['Pi_MC15TuneV1_ProbNNmu']
+        warnings.simplefilter("ignore")
+        return np.log(L_k/L_p)
 
 
 pickle_files = glob.glob("Data/*.pkl")
@@ -179,11 +182,6 @@ def Particle_ID(dataframe):
     crit3 = (DLL(dataframe[L_1[2]], dataframe[L_2[2]]) > -5)
     crit4 = (DLL(dataframe[L_1[3]], dataframe[L_2[3]]) < 25)
 
-    # subset = dataframe[ DLL(dataframe[ L_1[0] ], dataframe[ L_2[0] ] ) > -3]
-    # subset = subset[ DLL(dataframe[ L_1[1] ], dataframe[ L_2[1] ] ) > -3]
-    # subset = subset[ DLL(dataframe[ L_1[2] ], dataframe[ L_2[2] ] ) > -5]
-    # subset = subset[ DLL(dataframe[ L_1[3] ], dataframe[ L_2[3] ] ) < 25]
-
     accept = crit1 & crit2 & crit3 & crit4
     reject = ~accept
 
@@ -258,8 +256,15 @@ def peaking_back_5(dataframe):
     L_1 = 'Pi_MC15TuneV1_ProbNNp'
     L_2 = 'Pi_MC15TuneV1_ProbNNpi'
 
-    crit = (DLL(dataframe[L_1], dataframe[L_2]) > 0) & (5665 >= cal_mass(dataframe, ['K', 'Pi', 'mu_plus', 'mu_minus'], [
-        'K', 'p', 'mu_plus', 'mu_minus'])) & (cal_mass(dataframe, ['K', 'Pi', 'mu_plus', 'mu_minus'], ['K', 'p', 'mu_plus', 'mu_minus']) >= 5575)
+    crit = (
+        (DLL(dataframe[L_1], dataframe[L_2]) > 0) &
+        (5665 >= cal_mass(
+            dataframe, ['K', 'Pi', 'mu_plus', 'mu_minus'], ['K', 'p', 'mu_plus', 'mu_minus']
+        )) &
+        (cal_mass(
+            dataframe, ['K', 'Pi', 'mu_plus', 'mu_minus'], ['K', 'p', 'mu_plus', 'mu_minus']
+        ) >= 5575)
+    )
 
     not_subset = dataframe[crit]
     subset = dataframe[~crit]
@@ -309,47 +314,6 @@ def peaking_back_8(dataframe):
 
     return subset, not_subset
 
-
-# def Particle_ID(dataframe_1):
-
-#     dataframe = dataframe_1.copy()
-
-#     # Example of how one could go about vectorising this
-#     n1 = dataframe['mu_plus_MC15TuneV1_ProbNNk'].to_numpy()
-#     n2 = dataframe['mu_plus_MC15TuneV1_ProbNNpi'].to_numpy()
-#     n3 = dataframe['mu_plus_MC15TuneV1_ProbNNmu'].to_numpy()
-#     n4 = dataframe['mu_plus_MC15TuneV1_ProbNNe'].to_numpy()
-#     n5 = dataframe['mu_plus_MC15TuneV1_ProbNNp'].to_numpy()
-#     crit_1 = (n3 > n1) & (n3 > n2) & (n3 > n4) & (n3 > n5)
-
-#     n1 = dataframe['mu_minus_MC15TuneV1_ProbNNk'].to_numpy()
-#     n2 = dataframe['mu_minus_MC15TuneV1_ProbNNpi'].to_numpy()
-#     n3 = dataframe['mu_minus_MC15TuneV1_ProbNNmu'].to_numpy()
-#     n4 = dataframe['mu_minus_MC15TuneV1_ProbNNe'].to_numpy()
-#     n5 = dataframe['mu_minus_MC15TuneV1_ProbNNp'].to_numpy()
-#     crit_2 = (n3 > n1) & (n3 > n2) & (n3 > n4) & (n3 > n5)
-
-#     n1 = dataframe['K_MC15TuneV1_ProbNNk'].to_numpy()
-#     n2 = dataframe['K_MC15TuneV1_ProbNNpi'].to_numpy()
-#     n3 = dataframe['K_MC15TuneV1_ProbNNmu'].to_numpy()
-#     n4 = dataframe['K_MC15TuneV1_ProbNNe'].to_numpy()
-#     n5 = dataframe['K_MC15TuneV1_ProbNNp'].to_numpy()
-#     crit_3 = (n1 > n2) & (n1 > n3) & (n1 > n4) & (n1 > n5)
-
-#     n1 = dataframe['Pi_MC15TuneV1_ProbNNk'].to_numpy()
-#     n2 = dataframe['Pi_MC15TuneV1_ProbNNpi'].to_numpy()
-#     n3 = dataframe['Pi_MC15TuneV1_ProbNNmu'].to_numpy()
-#     n4 = dataframe['Pi_MC15TuneV1_ProbNNe'].to_numpy()
-#     n5 = dataframe['Pi_MC15TuneV1_ProbNNp'].to_numpy()
-#     crit_4 = (n2 > n1) & (n2 > n3) & (n2 > n4) & (n2 > n5)
-
-#     accept = crit_1 & crit_2 & crit_3 & crit_4
-#     reject = ~accept
-
-#     subset = dataframe[accept]
-#     not_subset = dataframe[reject]
-
-#     return subset, not_subset
 # %% Selection Criteria ALL
 def selection_pb(dataframe):
     yes_pb1, no_pb1 = peaking_back_1(dataframe)
