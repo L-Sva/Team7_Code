@@ -58,22 +58,24 @@ for test_data in range(len(mod_peaking_bk)):
     plt.show()
     #plt.savefig(f"Selection_cuts_histograms_q2/{column}_{funclistnames[selection_method]}_{peaking_bknames[test_data]}.png")
 
-#%%
-#B0 flight distance cut on flight distance column
-column='B0_FDCHI2_OWNPV'
-#column='B0_FD_OWNPV'
-selection_method=7#B0 flight distance
-for test_data in range(len(mod_peaking_bk)):
-    plt.close()
-    s, ns = funclist[selection_method](mod_peaking_bk[test_data])
-    val = test_candidate_true_false_positive_negative(mod_peaking_bk[test_data], selection_method = funclist[selection_method])
-    print(val)
-    plt.figure(test_data,dpi=200)
-    generic_selector_plot_new(orginal = mod_peaking_bk[test_data],subset = s, not_subset = ns, column = column, bins = 100, show = False,columnname='B\u2070 Flight Distance χ\u00B2 w.r.t Primary Vertex')
-    plt.title(f'Events accepted and rejected by {funclistnamesfull[selection_method]} selection cut \n for signal + {peaking_bknamesfull[test_data]}')
-    plt.show()
-    #plt.savefig(f"Selection_cuts_histograms_q2/{column}_{funclistnames[selection_method]}_{peaking_bknames[test_data]}.png")
-
+# =============================================================================
+# #%%
+# #B0 flight distance cut on flight distance column
+# column='B0_FDCHI2_OWNPV'
+# #column='B0_FD_OWNPV'
+# selection_method=7#B0 flight distance
+# for test_data in range(len(mod_peaking_bk)):
+#     plt.close()
+#     s, ns = funclist[selection_method](mod_peaking_bk[test_data])
+#     val = test_candidate_true_false_positive_negative(mod_peaking_bk[test_data], selection_method = funclist[selection_method])
+#     print(val)
+#     plt.figure(test_data,dpi=200)
+#     generic_selector_plot_new(orginal = mod_peaking_bk[test_data],subset = s, not_subset = ns, column = column, bins = 100, show = False,columnname='B\u2070 Flight Distance χ\u00B2 w.r.t Primary Vertex')
+#     plt.title(f'Events accepted and rejected by {funclistnamesfull[selection_method]} selection cut \n for signal + {peaking_bknamesfull[test_data]}')
+#     plt.show()
+#     #plt.savefig(f"Selection_cuts_histograms_q2/{column}_{funclistnames[selection_method]}_{peaking_bknames[test_data]}.png")
+# 
+# =============================================================================
 #%%
 #DIRA cut produces poor graphs because the angle that we cut at is so small
 # =============================================================================
@@ -110,21 +112,23 @@ for test_data in range(len(mod_peaking_bk)):
 #     #plt.savefig(f"Selection_cuts_histograms_q2/{column}_{funclistnames[selection_method]}_{peaking_bknames[test_data]}.png")
 # 
 # =============================================================================
-#%%
-#Particle ID selection cut performed on "probability that a Kaon is identified as a pion" column.
-column='K_MC15TuneV1_ProbNNpi'#can be another mc15 column - because these columns are the columns repsonsible for misidentification
-selection_method=10#particle ID
-for test_data in range(len(mod_peaking_bk)):
-    plt.close()
-    s, ns = funclist[selection_method](mod_peaking_bk[test_data])
-    val = test_candidate_true_false_positive_negative(mod_peaking_bk[test_data], selection_method = funclist[selection_method])
-    print(val)
-    plt.figure(test_data,dpi=200)
-    generic_selector_plot_new(orginal = mod_peaking_bk[test_data],subset = s, not_subset = ns, column = column, bins = 100, show = False,columnname='Probability that K is identified as \u03C0')
-    plt.title(f'Events accepted and rejected by {funclistnamesfull[selection_method]} selection cut \n for signal + {peaking_bknamesfull[test_data]}')
-    plt.show()
-    #plt.savefig(f"Selection_cuts_histograms_q2/{column}_{funclistnames[selection_method]}_{peaking_bknames[test_data]}.png")
-
+# =============================================================================
+# #%%
+# #Particle ID selection cut performed on "probability that a Kaon is identified as a pion" column.
+# column='K_MC15TuneV1_ProbNNpi'#can be another mc15 column - because these columns are the columns repsonsible for misidentification
+# selection_method=10#particle ID
+# for test_data in range(len(mod_peaking_bk)):
+#     plt.close()
+#     s, ns = funclist[selection_method](mod_peaking_bk[test_data])
+#     val = test_candidate_true_false_positive_negative(mod_peaking_bk[test_data], selection_method = funclist[selection_method])
+#     print(val)
+#     plt.figure(test_data,dpi=200)
+#     generic_selector_plot_new(orginal = mod_peaking_bk[test_data],subset = s, not_subset = ns, column = column, bins = 100, show = False,columnname='Probability that K is identified as \u03C0')
+#     plt.title(f'Events accepted and rejected by {funclistnamesfull[selection_method]} selection cut \n for signal + {peaking_bknamesfull[test_data]}')
+#     plt.show()
+#     #plt.savefig(f"Selection_cuts_histograms_q2/{column}_{funclistnames[selection_method]}_{peaking_bknames[test_data]}.png")
+# 
+# =============================================================================
 #%%
 column='Kstar_MM'#can be any of the mc15 columns - because these columns are the columns repsonsible for misidentification
 selection_method=3#kstar inv mass
